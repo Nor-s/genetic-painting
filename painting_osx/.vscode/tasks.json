@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "glfw",
+            "command": "/usr/bin/clang++",
+            "args": [
+                "-std=c++14",
+                "-stdlib=libc++",
+
+                "-g",
+                "${workspaceRoot}/src/*.cpp",
+
+                "-o",
+                "${workspaceRoot}/builds/main",
+
+                "-I${workspaceRoot}/include",
+                "-I/opt/homebrew/include",
+                "-L${workspaceRoot}/lib",
+                "-L/opt/homebrew/lib",
+
+                "-lglad",
+                "-lglfw",
+                "-lpthread"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+              }
+        }
+    ]
+}
