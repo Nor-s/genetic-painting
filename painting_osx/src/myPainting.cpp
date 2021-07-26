@@ -4,16 +4,20 @@ namespace nsg {
     myPainting::myPainting() {
         stbi_set_flip_vertically_on_load(true);
         initObject(&VAO, &VBO, &EBO);
-        texture = initTexture(tex[2], GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+        texture = initTexture(tex[rand()%4], GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
         shader = new Shader(vertexShader, fragmentShader);
         initTextureUnit();
+        initTransform();
+        setTransformToRand();
+        setTransformToUniform();
     }
+    //maybe not safe
     myPainting::~myPainting() {
         glDeleteTextures(1, &texture);
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
-        delete shader;
+ //       delete shader;
     }
     unsigned int myPainting::initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType) {
         unsigned int ID;
@@ -54,14 +58,11 @@ namespace nsg {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         //vertexAttrib : pos
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        //vertexAttrib : color
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
-        glEnableVertexAttribArray(1);
         //vertexAttrib : texture coord
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
-        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+        glEnableVertexAttribArray(1);
 
         //unBind
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -80,4 +81,37 @@ namespace nsg {
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
+    void myPainting::initTransform() {
+        transform = glm::mat4(1.0f);
+    }
+    void myPainting::setTransformToUniform() {
+        shader->use();
+        shader->setMat4("transform", transform);
+    }
+    void myPainting::setTransformToRand() {
+        float randT[2] = {getRandFloat(-1.0f, 1.0f), getRandFloat(-1.0f, 1.0f)};
+        float randS = getRandFloat(0.25f, 1.5f);
+        float randDegree = getRandFloat(0.0f, 360.0f);
+
+        translate(randT[0], randT[1], 0.0f);
+        scale(randS, randS, 0.0f);
+        rotate(randDegree);
+    }
+    void myPainting::translate(float tx, float ty, float tz) {
+        transform = glm::translate(transform, glm::vec3(tx, ty, tz));
+    }
+    void myPainting::rotate(float degree) {
+        transform = glm::rotate(transform, glm::radians(degree) ,glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+    void myPainting::scale(float sx, float sy, float sz) {
+        transform = glm::scale(transform, glm::vec3(sx, sy, sz));
+    }
+    void myPainting::setColor() {
+        return;
+    }
+    float myPainting::getRandFloat(float lo, float hi) {
+        return lo + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(hi-lo)));
+    }
+   // void myPainting::
+   // void myPainting::
 }

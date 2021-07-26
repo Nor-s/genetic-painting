@@ -1,19 +1,26 @@
+#include <stdlib.h>
+#include <time.h>
+#include <vector>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "myheader/myWindow.h"
 #include "myheader/myPainting.h"
-//#include "myheader/myCallback.h"
+
+std::vector<nsg::myPainting*> canvas;
 
 int main() {
+    srand (static_cast <unsigned> (time(0)));  
     glfwInit();
     nsg::myWindow window;
-    nsg::myPainting brush;
 
     while(!glfwWindowShouldClose(window.getWindow())) {
-        nsg::processInput(window.getWindow());
+        nsg::processInput(window.getWindow(), canvas);
 
-        window.windowClear(GL_COLOR_BUFFER_BIT, 0.2f, 0.2f, 0.0f, 1.0f);
+        window.windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.0f, 0.0f, 1.0f);
 
-        brush.draw();
+        for(int i = 0; i < static_cast<int>(canvas.size()); i++) {
+            canvas[i]->draw();
+        }
 
         glfwSwapBuffers(window.getWindow());
         glfwPollEvents();
