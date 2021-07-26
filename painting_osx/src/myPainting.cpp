@@ -4,12 +4,15 @@ namespace nsg {
     myPainting::myPainting() {
         stbi_set_flip_vertically_on_load(true);
         initObject(&VAO, &VBO, &EBO);
-        texture = initTexture(tex[rand()%4], GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        texture = initTexture(tex[rand()%10], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
         shader = new Shader(vertexShader, fragmentShader);
         initTextureUnit();
         initTransform();
         setTransformToRand();
         setTransformToUniform();
+        
+        setBrightToRand();
+        setBrightToUniform();
     }
     //maybe not safe
     myPainting::~myPainting() {
@@ -90,12 +93,19 @@ namespace nsg {
     }
     void myPainting::setTransformToRand() {
         float randT[2] = {getRandFloat(-1.0f, 1.0f), getRandFloat(-1.0f, 1.0f)};
-        float randS = getRandFloat(0.25f, 1.5f);
+        float randS = getRandFloat(0.15f, 0.25f);
         float randDegree = getRandFloat(0.0f, 360.0f);
 
         translate(randT[0], randT[1], 0.0f);
         scale(randS, randS, 0.0f);
         rotate(randDegree);
+    }
+    void myPainting::setBrightToRand() {
+        bright = getRandFloat(0.0, 1.0);
+    }
+    void myPainting::setBrightToUniform() {
+        shader->use();
+        shader->setFloat("bright", bright);
     }
     void myPainting::translate(float tx, float ty, float tz) {
         transform = glm::translate(transform, glm::vec3(tx, ty, tz));

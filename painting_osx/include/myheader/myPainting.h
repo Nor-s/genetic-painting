@@ -15,22 +15,29 @@
 namespace nsg {
     class myPainting {
     private:
+    //5 2
         float vertices[20] = {
             // positions              // texture coords
-             0.25f,  0.25f, 0.0f,   1.0f, 1.0f,   // top right
-             0.25f, -0.25f, 0.0f,   1.0f, 0.0f,   // bottom right
-            -0.25f, -0.25f, 0.0f,   0.0f, 0.0f,   // bottom left
-            -0.25f,  0.25f, 0.0f,   0.0f, 1.0f    // top left 
+             0.55f,  0.25f, 0.0f,   1.0f, 1.0f,   // top right
+             0.55f, -0.25f, 0.0f,   1.0f, 0.0f,   // bottom right
+            -0.55f, -0.25f, 0.0f,   0.0f, 0.0f,   // bottom left
+            -0.55f,  0.25f, 0.0f,   0.0f, 1.0f    // top left 
         };
         unsigned int indices[6] = {  // note that we start from 0!
             0, 1, 3,   // first triangle
             1, 2, 3    // second triangle
         };
-        const char* tex[4] = {
-            "././resources/3.jpg",
-            "././resources/2.jpg",
-            "././resources/3.jpg",
-            "././resources/4.jpg",
+        const char* tex[10] = {
+            "././resources/1.png",
+            "././resources/2.png",
+            "././resources/3.png",
+            "././resources/4.png",
+            "././resources/5.png",
+            "././resources/6.png",
+            "././resources/7.png",
+            "././resources/8.png",
+            "././resources/9.png",
+            "././resources/10.png"
         };
         const char* vertexShader = "././shaders/vs_brush.vs";
         const char* fragmentShader = "././shaders/fs_brush.fs";
@@ -41,7 +48,7 @@ namespace nsg {
         Shader* shader;
         float currentColor[4];
         glm::mat4 transform;
-
+        float bright;
     public:
         myPainting();
         ~myPainting();
@@ -51,6 +58,8 @@ namespace nsg {
         void initTransform();
         void setTransformToUniform();
         void setTransformToRand();
+        void setBrightToUniform();
+        void setBrightToRand();
         void setColor();
         void translate(float tx, float ty, float tz);
         void rotate(float degree);
