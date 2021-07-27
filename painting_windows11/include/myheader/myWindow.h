@@ -25,14 +25,13 @@ namespace nsg {
         static int SCR_HEIGHT;
         static glm::mat4 projection;
         
-        myWindow(int width, int height);
-        GLFWwindow* initWindow(int width, int height);
+        myWindow(int width, int height, const char* title);
+        GLFWwindow* initWindow(int width, int height, const char* name);
         GLFWwindow* getWindow();
         void initPBO();
         void windowClear(GLbitfield mask, GLfloat r, GLfloat g, GLfloat b, GLfloat w);
         void windowCapture(const char* filePath);
     };
-    void windowResizeCallback(GLFWwindow* windowPointer, int width, int height);
 
 }
 #endif
