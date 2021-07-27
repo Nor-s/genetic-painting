@@ -53,7 +53,7 @@ namespace nsg {
         myPainting();
         ~myPainting();
         unsigned int initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType);
-        void initObject(unsigned int* VBO, unsigned int* VAO, unsigned int* EBO);
+        void initObject();
         void initTextureUnit();
         void initTransform();
         void setTransformToUniform();

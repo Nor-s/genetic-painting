@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        //C++ 컴파일
+        {
+            "type": "shell",
+            "label": "glfw",
+			"command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-g",
+                "${workspaceRoot}/src/*.cpp",
+                "-o",
+                "${workspaceRoot}/builds/main",
+
+                "-I${workspaceRoot}/include",
+                "-L${workspaceRoot}/lib",
+                "-lmingw32",
+              //  "-static",
+                "-lglfw3",
+                "-lglad",
+                "-lpthread",
+                "-lgdi32",
+                "-lopengl32"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group":  {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

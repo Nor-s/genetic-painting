@@ -45,16 +45,16 @@ namespace nsg {
         stbi_image_free(data);
         return ID;
     }
-    void myPainting::initObject(unsigned int* VBO, unsigned int* VAO, unsigned int* EBO) {
+    void myPainting::initObject() {
         //Gen
-        glGenVertexArrays(1, VAO);
-        glGenBuffers(1, VBO);
-        glGenBuffers(1, EBO);
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
 
         //Bind
-        glBindVertexArray(*VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
         //Buffer -> Data 
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -74,7 +74,7 @@ namespace nsg {
     }
     void myPainting::initTextureUnit() {
         shader->use();
-        shader->setInt("texture", 0);
+        shader->setInt("texture0", 0);
     }
     void myPainting::draw() {
         glActiveTexture(GL_TEXTURE0);
