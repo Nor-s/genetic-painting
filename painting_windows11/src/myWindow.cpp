@@ -7,11 +7,14 @@ namespace nsg {
 
     myWindow::myWindow(int width, int height, const char* title) {
         stbi_flip_vertically_on_write(true);
-        width = currentWidth = SCR_WIDTH = 800;
-        height = currentHeight = SCR_HEIGHT = 800;
+        currentWidth = SCR_WIDTH = width;
+        currentHeight = SCR_HEIGHT = height;
         window = initWindow(width, height, title);
-        glViewport(0,0,width,height);
-        projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+        projection = glm::ortho(
+            (float)-width/2.0f, (float)width/2.0f,
+            (float)-height/2.0f, (float)height/2.0f,
+            0.0f, 100.0f
+        );
         initPBO();
     }
     
@@ -65,10 +68,15 @@ namespace nsg {
 
     void myWindow::windowClear(GLbitfield mask, GLfloat r, GLfloat g, GLfloat b, GLfloat w) {
         glClearColor(r, g, b, w);
+    #ifdef DEEPTH_TEST
+        glClear(mask | GL_DEPTH_TEST);
+    #else
         glClear(mask);
+    #endif
     }
 
     void myWindow::windowCapture(const char *strFilePath) {
+        glfwMakeContextCurrent(getWindow());
         initPBO();
         glDrawBuffer(GL_FRONT);//(GL_BACK);
 

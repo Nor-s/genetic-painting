@@ -8,7 +8,7 @@
             "program":  "${workspaceRoot}/builds/main",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceRoot}/builds",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

@@ -18,29 +18,25 @@ namespace nsg {
     //5 2
         float vertices[20] = {
             // positions              // texture coords
-             0.5f,  0.25f, 0.0f,   1.0f, 1.0f,   // top right
-             0.5f, -0.25f, 0.0f,   1.0f, 0.0f,   // bottom right
-            -0.5f, -0.25f, 0.0f,   0.0f, 0.0f,   // bottom left
-            -0.5f,  0.25f, 0.0f,   0.0f, 1.0f    // top left 
+             0.5f,  0.5f, 0.0f,   1.0f, 1.0f,   // top right
+             0.5f, -0.5f, 0.0f,   1.0f, 0.0f,   // bottom right
+            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f,   // bottom left
+            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f    // top left 
         };
         unsigned int indices[6] = {  // note that we start from 0!
             0, 1, 3,   // first triangle
             1, 2, 3    // second triangle
         };
-        const char* tex[10] = {
-            "././resources/1.png",
-            "././resources/2.png",
-            "././resources/3.png",
-            "././resources/4.png",
-            "././resources/5.png",
-            "././resources/6.png",
-            "././resources/7.png",
-            "././resources/8.png",
-            "././resources/9.png",
-            "././resources/10.png"
+        const char* tex[4] = {
+            "../resources/1.png",
+            "../resources/2.png",
+            "../resources/3.png",
+            "../resources/4.png",
         };
-        const char* vertexShader = "././shaders/vs_brush.vs";
-        const char* fragmentShader = "././shaders/fs_brush.fs";
+        const char* vertexShader = "../shaders/vs_brush.vs";
+        const char* fragmentShader = "../shaders/fs_brush.fs";
+        const char* grayVertexShader = "../shaders/vs_gray.vs";
+        const char* grayFragmentShader = "../shaders/fs_gray.fs";
         unsigned int texture;
         unsigned int VAO;
         unsigned int VBO;
@@ -49,15 +45,19 @@ namespace nsg {
         float currentColor[4];
         glm::mat4 transform;
     public:
-        myPainting();
+        int texWidth;
+        int texHeight;
+        myPainting(int width, int height);
+        myPainting(const char* filePath);
         ~myPainting();
         unsigned int initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType);
         void initObject();
         void initTextureUnit();
         void initTransform();
+        void setVertices (bool isBrush);
         void setProjectionToUniform(const glm::mat4& projection);
         void setTransformToUniform();
-        void setTransformToRand();
+        void setTransformToRand(int width, int height);
         void setBrightToUniform(float bright);
         void setColor();
         void translate(float tx, float ty, float tz);
