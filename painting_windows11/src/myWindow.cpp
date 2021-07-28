@@ -64,8 +64,10 @@ namespace nsg {
         return window;
     }
     void myWindow::drawingLock() {
+    #ifdef SEMAPHORE_TEST
         while(!drawingSemaphore){
         }
+    #endif
         drawingSemaphore = false;
     }
     void myWindow::drawingUnLock() {
@@ -73,7 +75,7 @@ namespace nsg {
     }
     void myWindow::initPBO(){
         glfwGetWindowSize(getWindow(), &currentWidth, &currentHeight);
-        unsigned int bufferSize = currentWidth * currentHeight * 3;
+        unsigned int bufferSize = currentWidth * (currentHeight/2) * 3;
 
         //pbo gen
         glGenBuffers(2, PBO);
@@ -99,13 +101,11 @@ namespace nsg {
 
     GLubyte** myWindow::getWindowPixel() {
         GLubyte** pboMem = new GLubyte*[2];
-        drawingLock();
-        glfwMakeContextCurrent(getWindow());
 
     #ifdef WINDOW_RESIZABLE
         initPBO();
     #endif
-     //   glDrawBuffer(GL_FRONT);//(GL_BACK);
+
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glReadPixels(
             0, 0,
@@ -117,14 +117,13 @@ namespace nsg {
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
     	glReadPixels(
-    		0, currentWidth/2,					    
+    		0, currentHeight/2,					    
     		currentWidth, currentHeight/2,		
     		GL_BGR,					    
     		GL_UNSIGNED_BYTE,    		
             0
 		);
 
-        drawingUnLock();
 // Process partial images.  Mapping the buffer waits for
 // outstanding DMA transfers into the buffer to finish.
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
@@ -132,12 +131,12 @@ namespace nsg {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
         pboMem[1] = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
-/*
+
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-*/        
+       
     #ifdef WINDOW_RESIZABLE
         glDeleteBuffers(2, PBO);
     #endif
@@ -145,13 +144,13 @@ namespace nsg {
     }
 
     void myWindow::windowCapture(const char *strFilePath) {
+        int strideSize = SCR_WIDTH*3; //+ SCR_WIDTH%4;
+
         GLubyte** pboMem = getWindowPixel();
 
-        stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem[0], SCR_WIDTH*3);
-        stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem[1], SCR_WIDTH*3);
-
-     //   glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        //unmap the buffer
+        stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem[0], strideSize);
+        stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem[1], strideSize);
+        //delete
    }
 
 }

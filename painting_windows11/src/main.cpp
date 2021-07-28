@@ -6,6 +6,7 @@
 #include <vector>
 
 #define DEPTH_TEST
+//#define SEMAPHORE_TEST
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
@@ -57,15 +58,15 @@ void drawDisplay1(){
     if(windows.size() == 2) {
         nsg::myWindow::drawingLock();
         glfwMakeContextCurrent(windows[1]->getWindow());
-        windows[1]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.0f, 0.0f, 1.0f);
+        windows[1]->windowClear(GL_COLOR_BUFFER_BIT, 1.0f, 1.0f, 1.0f, 1.0f);
 
         nsg::DNA tmp (
-            1,
+            10,
             0.0f, 0.0f,
             windows[0]->SCR_WIDTH, windows[0]->SCR_HEIGHT,
             1.0, 1.0
         );
-        tmp.draw(0);       
+        tmp.drawAll();       
         glfwSwapBuffers(windows[1]->getWindow());
         nsg::myWindow::drawingUnLock();
     }
@@ -96,11 +97,11 @@ void processInput() {
         }
     }
     if (windows.size() == 2 && glfwGetKey(windows[1]->getWindow(), GLFW_KEY_1) == GLFW_PRESS) {
-        if(count == 0) {
-            return;
-        }
-        count--;
+        nsg::myWindow::drawingLock();
+        glDrawBuffer(GL_BACK);
+        drawDisplay1();
         windows[1]->windowCapture("sdf");
+        nsg::myWindow::drawingUnLock();
     }
 }
 
