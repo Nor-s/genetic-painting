@@ -1,27 +1,28 @@
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
 
 #define DEPTH_TEST
-#define WINODW_RESIZABLE
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "myheader/myWindow.h"
 #include "myheader/myPainting.h"
+#include "myheader/myGA.h"
 
 void drawDisplay0();
 void drawDisplay1();
-void processInput(std::vector<nsg::myPainting*>& canvas);
+void processInput();
 void drop_callback(GLFWwindow* window, int count, const char** paths);
 void windowResizeCallback(GLFWwindow* windowPointer, int width, int height);
 void pos_callback(GLFWwindow* window, int x, int y);
 
-std::vector<nsg::myPainting*> canvas;
 std::vector<nsg::myWindow*> windows;
 nsg::myPainting* picture;
-
 
 int main() {
     srand (static_cast <unsigned> (time(0)));  
@@ -41,7 +42,8 @@ int main() {
 	glfwSetWindowPosCallback(windows[0]->getWindow(), pos_callback);
 
     while(!glfwWindowShouldClose(windows[0]->getWindow())) {
-        processInput(canvas);
+        processInput();
+        drawDisplay0();
         drawDisplay1();
         glfwPollEvents();
     }
@@ -57,20 +59,15 @@ void drawDisplay1(){
         glfwMakeContextCurrent(windows[1]->getWindow());
         windows[1]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.0f, 0.0f, 1.0f);
 
-        for(int i = 0; i < static_cast<int>(canvas.size()); i++) {
-            canvas[i]->setProjectionToUniform(windows[1]->projection);
-            canvas[i]->draw();
-        }
-        if(canvas.size() < 10) {
-            canvas.push_back(new nsg::myPainting(nsg::myWindow::SCR_WIDTH, nsg::myWindow::SCR_HEIGHT));
-        }
-
+        nsg::DNA tmp (
+            1,
+            0.0f, 0.0f,
+            windows[0]->SCR_WIDTH, windows[0]->SCR_HEIGHT,
+            1.0, 1.0
+        );
+        tmp.draw(0);       
         glfwSwapBuffers(windows[1]->getWindow());
         nsg::myWindow::drawingUnLock();
-    }
-    else {
-        windows[0]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.2f, 0.2f, 1.0f);
-        glfwSwapBuffers(windows[0]->getWindow());
     }
 }
 
@@ -78,18 +75,17 @@ void drawDisplay0() {
     if(windows.size() == 2) {
         nsg::myWindow::drawingLock();
 
+       windows[0]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.2f, 0.2f, 1.0f);
         glfwMakeContextCurrent(windows[0]->getWindow());
-
-        windows[0]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.2f, 0.2f, 1.0f);
         picture->setProjectionToUniform(nsg::myWindow::projection);
         picture->draw();
         glfwSwapBuffers(windows[0]->getWindow());
-        
+
         nsg::myWindow::drawingUnLock();
     }
 }
 
-void processInput(std::vector<nsg::myPainting*>& canvas) {
+void processInput() {
     static int count = 1;
     if (glfwGetKey(windows[0]->getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(windows[0]->getWindow(), true);
@@ -120,11 +116,11 @@ void drop_callback(GLFWwindow* window, int count, const char** paths)
         glfwSetWindowSize(windows[0]->getWindow(), picture->texWidth, picture->texHeight);
         glfwGetWindowPos(windows[0]->getWindow(), &posx, &posy);
 
-
         windows.push_back(new nsg::myWindow(picture->texWidth, picture->texHeight, "painting"));
         glfwSetWindowPos(windows[1]->getWindow(), posx+picture->texWidth, posy);
         glfwSetFramebufferSizeCallback(windows[1]->getWindow(), windowResizeCallback);
 	    glfwSetWindowPosCallback(windows[1]->getWindow(), pos_callback);
+
         drawDisplay0();
     }
 }
@@ -133,15 +129,16 @@ void windowResizeCallback(GLFWwindow* windowPointer, int width, int height) {
     glViewport(0, 0, width, height);
     float widthFactor = static_cast<float>(width) / static_cast<float>(nsg::myWindow::SCR_WIDTH);
     float heightFactor = static_cast<float>(height) / static_cast<float>(nsg::myWindow::SCR_HEIGHT);
-
     nsg::myWindow::projection = glm::ortho(
          -(float)nsg::myWindow::SCR_WIDTH/2.0f * widthFactor, (float)nsg::myWindow::SCR_WIDTH/2.0f * widthFactor, 
          -(float)nsg::myWindow::SCR_HEIGHT/2.0f * heightFactor, (float)nsg::myWindow::SCR_HEIGHT/2.0f * heightFactor, 
         0.0f, 100.0f
     );
+
     drawDisplay0();
     drawDisplay1();
 }
+
 void pos_callback(GLFWwindow* window, int x, int y) {
     // for adjacent two window 
     int posx = 0, posy = 0;

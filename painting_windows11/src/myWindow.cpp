@@ -1,6 +1,8 @@
 #include "myheader/myWindow.h"
 
 namespace nsg {    
+    std::map<int, myWindow*> myWindow::windowDictionary;
+    int myWindow::size = 0;
     bool myWindow::drawingSemaphore = true;
     int myWindow::SCR_HEIGHT;
     int myWindow::SCR_WIDTH;
@@ -9,6 +11,10 @@ namespace nsg {
 
     myWindow::myWindow(int width, int height, const char* title) {
         stbi_flip_vertically_on_write(true);
+        createWindow(width, height, title);
+        windowDictionary[size++] = this; 
+    }
+    void myWindow::createWindow(int width, int height, const char* title) {
         currentWidth = SCR_WIDTH = width;
         currentHeight = SCR_HEIGHT = height;
         window = initWindow(width, height, title);
@@ -19,13 +25,17 @@ namespace nsg {
         );
         initPBO();
     }
+    void myWindow::deleteWindow() {
+        glfwDestroyWindow(window);
+    }
     
     GLFWwindow* myWindow::initWindow(int width, int height, const char* title) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    #ifdef WINDOW_RESIZABLE
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    #ifdef WINDOW_RESIZABLE
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     #endif
     #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);

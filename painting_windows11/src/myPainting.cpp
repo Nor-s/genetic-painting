@@ -1,14 +1,13 @@
 #include "myheader/myPainting.h"
 
 namespace nsg {
-    myPainting::myPainting(int width, int height) {
+    myPainting::myPainting(float x, float y, float width, float height, float Sx, float Sy) {
         texture = initTexture(tex[rand()%4], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
         setVertices(true);
         initObject();
         shader = new Shader(vertexShader, fragmentShader);
         initTextureUnit();
-        initTransform();
-        setTransformToRand(width, height);
+        setTransformToRand(x, y, width, height, Sx, Sy);
         setTransformToUniform();
         
         setBrightToUniform(getRandFloat(0.0, 1.0));
@@ -30,7 +29,7 @@ namespace nsg {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
- //       delete shader;
+        delete shader;
     }
     unsigned int myPainting::initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType) {
         unsigned int ID;
@@ -119,14 +118,15 @@ namespace nsg {
         shader->use();
         shader->setMat4("model", transform);
     }
-    void myPainting::setTransformToRand(int width, int height) {
-        float randT[2] = {getRandFloat(-(float)width/2.0f, (float)width/2.0f), getRandFloat(-(float)height/2.0f, (float)height/2.0f)};
+    void myPainting::setTransformToRand(float x, float y, float width, float height, float Sx, float Sy) {
+        float randT[2] = {getRandFloat(-width/2.0f + x, width/2.0f+ x), getRandFloat(-height/2.0f + y, height/2.0f + y)};
         float randSx = getRandFloat(0.15f, 0.3f);
         float randSy = getRandFloat(0.125f, 0.275f);
         float randDegree = getRandFloat(0.0f, 360.0f);
-
+        initTransform();
         translate(randT[0], randT[1], 0.0f);
         scale(randSx, randSy, 1.0f);
+        scale(Sx, Sy, 1.0f);
         rotate(randDegree);
     }
     void myPainting::setBrightToUniform(float bright) {

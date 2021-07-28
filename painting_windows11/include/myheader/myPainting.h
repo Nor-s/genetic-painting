@@ -47,7 +47,7 @@ namespace nsg {
     public:
         int texWidth;
         int texHeight;
-        myPainting(int width, int height);
+        myPainting(float x, float y, float width, float height, float Sx, float Sy);
         myPainting(const char* filePath);
         ~myPainting();
         unsigned int initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType);
@@ -57,7 +57,8 @@ namespace nsg {
         void setVertices (bool isBrush);
         void setProjectionToUniform(const glm::mat4& projection);
         void setTransformToUniform();
-        void setTransformToRand(int width, int height);
+        // viewport coordinate and size scale
+        void setTransformToRand(float x, float y, float width, float height, float Sx, float Sy);
         void setBrightToUniform(float bright);
         void setColor();
         void translate(float tx, float ty, float tz);
@@ -65,7 +66,7 @@ namespace nsg {
         void scale(float sx, float sy, float sz);
         void draw();
 
-        float getRandFloat(float lo, float hi);
+        static float getRandFloat(float lo, float hi);
     };
 }
 #endif
