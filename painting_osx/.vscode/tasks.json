@@ -4,16 +4,16 @@
         {
             "type": "shell",
             "label": "glfw",
-            "command": "/usr/bin/clang++",
+            "command": "/usr/bin/clang++",        
             "args": [
-                "-std=c++14",
+                "-std=c++17",
                 "-stdlib=libc++",
 
                 "-g",
                 "${workspaceRoot}/src/*.cpp",
 
                 "-o",
-                "${workspaceRoot}/builds/main",
+                "${workspaceRoot}/builds/main.out",
 
                 "-I${workspaceRoot}/include",
                 "-I/opt/homebrew/include",

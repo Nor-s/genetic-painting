@@ -1,18 +1,28 @@
 #include "myheader/myPainting.h"
 
 namespace nsg {
-    myPainting::myPainting() {
-        stbi_set_flip_vertically_on_load(true);
-        initObject(&VAO, &VBO, &EBO);
-        texture = initTexture(tex[rand()%10], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+    myPainting::myPainting(int width, int height) {
+        texture = initTexture(tex[rand()%4], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+        setVertices(true);
+        initObject();
         shader = new Shader(vertexShader, fragmentShader);
         initTextureUnit();
         initTransform();
-        setTransformToRand();
+        setTransformToRand(width, height);
         setTransformToUniform();
         
-        setBrightToRand();
-        setBrightToUniform();
+        setBrightToUniform(getRandFloat(0.0, 1.0));
+    }
+    myPainting::myPainting(const char* filePath) {
+        stbi_set_flip_vertically_on_load(true);
+        texture = initTexture(filePath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        setVertices(false);
+        initObject();
+        shader = new Shader(grayVertexShader, grayFragmentShader);
+        initTextureUnit();
+        initTransform();
+        setTransformToUniform();
+        setBrightToUniform(1.0f);
     }
     //maybe not safe
     myPainting::~myPainting() {
@@ -27,15 +37,15 @@ namespace nsg {
         glGenTextures(1, &ID);
         glBindTexture(GL_TEXTURE_2D, ID);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         // load and generate the texture
-        int width, height, nrChannels;
-        unsigned char *data = stbi_load(fileName, &width, &height, &nrChannels, 0);
+        int nrChannels;
+        unsigned char *data = stbi_load(fileName, &texWidth, &texHeight, &nrChannels, 0);
         if (data) {
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, originalFormat, originalType, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texWidth, texHeight, 0, originalFormat, originalType, data);
             glGenerateMipmap(GL_TEXTURE_2D);
         }
         else {
@@ -87,23 +97,39 @@ namespace nsg {
     void myPainting::initTransform() {
         transform = glm::mat4(1.0f);
     }
+    void myPainting::setVertices (bool isBrush) {
+        if(!isBrush) {
+            vertices[0] = vertices[5] = (float)texWidth/2.0f;
+            vertices[10] = vertices[15] = -((float)texWidth)/2.0f;
+            vertices[1] = vertices[16] = (float)texHeight/2.0f;
+            vertices[6] = vertices[11] = -((float)texHeight/2.0f);
+        }
+        else {
+            vertices[0] = vertices[5] = (float)texHeight/2.0f;
+            vertices[10] = vertices[15] = -((float)texHeight)/2.0f;
+            vertices[1] = vertices[16] = (float)texHeight/2.0f;
+            vertices[6] = vertices[11] = -((float)texHeight/2.0f);
+        }
+    }
+    void myPainting::setProjectionToUniform(const glm::mat4& projection) {
+        shader->use();
+        shader->setMat4("projection", projection);
+    }
     void myPainting::setTransformToUniform() {
         shader->use();
-        shader->setMat4("transform", transform);
+        shader->setMat4("model", transform);
     }
-    void myPainting::setTransformToRand() {
-        float randT[2] = {getRandFloat(-1.0f, 1.0f), getRandFloat(-1.0f, 1.0f)};
-        float randS = getRandFloat(0.15f, 0.25f);
+    void myPainting::setTransformToRand(int width, int height) {
+        float randT[2] = {getRandFloat(-(float)width/2.0f, (float)width/2.0f), getRandFloat(-(float)height/2.0f, (float)height/2.0f)};
+        float randSx = getRandFloat(0.15f, 0.3f);
+        float randSy = getRandFloat(0.125f, 0.275f);
         float randDegree = getRandFloat(0.0f, 360.0f);
 
         translate(randT[0], randT[1], 0.0f);
-        scale(randS, randS, 0.0f);
+        scale(randSx, randSy, 1.0f);
         rotate(randDegree);
     }
-    void myPainting::setBrightToRand() {
-        bright = getRandFloat(0.0, 1.0);
-    }
-    void myPainting::setBrightToUniform() {
+    void myPainting::setBrightToUniform(float bright) {
         shader->use();
         shader->setFloat("bright", bright);
     }
@@ -122,6 +148,4 @@ namespace nsg {
     float myPainting::getRandFloat(float lo, float hi) {
         return lo + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(hi-lo)));
     }
-   // void myPainting::
-   // void myPainting::
 }

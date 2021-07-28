@@ -8,9 +8,9 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceRoot}/builds/main",
+            "program": "${workspaceRoot}/builds/main.out",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceRoot}/builds",
             "preLaunchTask": "glfw",
         }
     ]
