@@ -3,6 +3,7 @@
 #include <vector>
 
 #define DEPTH_TEST
+#define WINODW_RESIZABLE
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
@@ -21,7 +22,6 @@ std::vector<nsg::myPainting*> canvas;
 std::vector<nsg::myWindow*> windows;
 nsg::myPainting* picture;
 
-bool drawingSemaphore = true;
 
 int main() {
     srand (static_cast <unsigned> (time(0)));  
@@ -50,9 +50,10 @@ int main() {
     return 0;
 }
 
+
 void drawDisplay1(){
-    if(windows.size() == 2 && drawingSemaphore) {
-        drawingSemaphore = false;
+    if(windows.size() == 2) {
+        nsg::myWindow::drawingLock();
         glfwMakeContextCurrent(windows[1]->getWindow());
         windows[1]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -65,7 +66,7 @@ void drawDisplay1(){
         }
 
         glfwSwapBuffers(windows[1]->getWindow());
-        drawingSemaphore = true;
+        nsg::myWindow::drawingUnLock();
     }
     else {
         windows[0]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.2f, 0.2f, 1.0f);
@@ -74,15 +75,17 @@ void drawDisplay1(){
 }
 
 void drawDisplay0() {
-    if(windows.size() == 2 && drawingSemaphore) {
-        drawingSemaphore = false;
+    if(windows.size() == 2) {
+        nsg::myWindow::drawingLock();
+
         glfwMakeContextCurrent(windows[0]->getWindow());
 
         windows[0]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.2f, 0.2f, 1.0f);
         picture->setProjectionToUniform(nsg::myWindow::projection);
         picture->draw();
         glfwSwapBuffers(windows[0]->getWindow());
-        drawingSemaphore = true;
+        
+        nsg::myWindow::drawingUnLock();
     }
 }
 
@@ -144,7 +147,7 @@ void pos_callback(GLFWwindow* window, int x, int y) {
     int posx = 0, posy = 0;
     glfwGetWindowPos(windows[0]->getWindow(), &posx, &posy);
     if(windows.size() == 2) {
-        glfwSetWindowPos(windows[1]->getWindow(), posx + windows[1]->SCR_WIDTH, posy);
+        glfwSetWindowPos(windows[1]->getWindow(), posx + windows[0]->SCR_WIDTH, posy);
     }
     
 	drawDisplay0();

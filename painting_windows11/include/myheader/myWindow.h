@@ -15,6 +15,8 @@
 namespace nsg {
     class myWindow{
     private:
+        static bool drawingSemaphore;
+
         GLFWwindow* window;
         int currentWidth;
         int currentHeight;
@@ -24,12 +26,15 @@ namespace nsg {
         static int SCR_WIDTH;
         static int SCR_HEIGHT;
         static glm::mat4 projection;
+        static void drawingLock();
+        static void drawingUnLock();
         
         myWindow(int width, int height, const char* title);
         GLFWwindow* initWindow(int width, int height, const char* name);
         GLFWwindow* getWindow();
         void initPBO();
         void windowClear(GLbitfield mask, GLfloat r, GLfloat g, GLfloat b, GLfloat w);
+        GLubyte** getWindowPixel();
         void windowCapture(const char* filePath);
     };
 
