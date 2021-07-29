@@ -4,8 +4,8 @@ namespace nsg {
     std::map<int, myWindow*> myWindow::windowDictionary;
     int myWindow::size = 0;
     bool myWindow::drawingSemaphore = true;
-    int myWindow::SCR_HEIGHT;
-    int myWindow::SCR_WIDTH;
+    int myWindow::SCR_HEIGHT = 800;
+    int myWindow::SCR_WIDTH = 800;
     glm::mat4 myWindow::projection;
 
 
@@ -21,7 +21,7 @@ namespace nsg {
         projection = glm::ortho(
             (float)-width/2.0f, (float)width/2.0f,
             (float)-height/2.0f, (float)height/2.0f,
-            0.0f, 100.0f
+            0.1f, 100.0f
         );
         initPBO();
     }
@@ -132,6 +132,7 @@ namespace nsg {
         pboMem[1] = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
 
+
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
@@ -147,9 +148,19 @@ namespace nsg {
         int strideSize = SCR_WIDTH*3; //+ SCR_WIDTH%4;
 
         GLubyte** pboMem = getWindowPixel();
+        GLubyte* full = new GLubyte[currentWidth*currentHeight*3];
+        int size = strideSize*currentHeight;
+        for(int i = 0; i < size/2; i++) {
+                full[i] = pboMem[0][i];
+                full[i+size/2] = pboMem[1][i];
+        }
 
         stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem[0], strideSize);
         stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem[1], strideSize);
+        stbi_write_png("s1111.png", currentWidth, currentHeight, 3, full, strideSize);
+
+        delete[] full;
+        delete[] pboMem;
         //delete
    }
 

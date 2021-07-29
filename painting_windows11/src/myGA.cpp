@@ -1,4 +1,4 @@
-#include "myHeader/myGA.h"
+#include "myheader/myGA.h"
 
 /*
 
@@ -19,6 +19,7 @@ namespace nsg {
             brushPointers.push_back({true, b.dna[i].second});
             b.brushPointers[i].first = false;
         }
+        fitness = 0;
     }
 
     DNA::DNA(int n, float x, float y, float width, int height, float Sx, float Sy) {
@@ -26,8 +27,13 @@ namespace nsg {
         initDNA(x, y, width, height, Sx, Sy);
     }
     DNA::~DNA(){
+    #ifdef DEBUG_MODE
+        std::cout<<"~~~DNA\n";
+    #endif 
+        std::cout<<"~~~DNA\n";
         for(int i = 0; i < dnaSize; i++) {
             if(brushPointers[i].first == true) {
+
                 delete brushPointers[i].second;
             }
         }
@@ -40,7 +46,7 @@ namespace nsg {
     }
     
     bool DNA::operator <(DNA& a) {
-        return similarity < a.similarity;
+        return fitness < a.fitness;
     }    
    
     void DNA::mutate(int n, float x, float y, float width, float height, float Sx, float Sy) {
@@ -60,7 +66,7 @@ namespace nsg {
     }
     void DNA::drawAll() {
         for(int i = 0; i < dnaSize; i++) {
-            draw(i);
+            this->draw(i);
         }
     }
 
@@ -69,9 +75,19 @@ namespace nsg {
     }
 
     GLubyte** DNA::getPicture(){
-        GLubyte** ret;
+        myWindow::drawingLock();
+        glfwMakeContextCurrent(myWindow::windowDictionary[1]->getWindow());
+        glDrawBuffer(GL_BACK);
+        myWindow::windowDictionary[1]->windowClear(GL_COLOR_BUFFER_BIT, 1.0, 1.0, 1.0, 1.0);
+        drawAll();
+        GLubyte** ret = myWindow::windowDictionary[1]->getWindowPixel();
+        myWindow::drawingUnLock();
         return ret;
     }
+    float& DNA::fitnessRef() {
+        return fitness;
+    }
+
 }
 /*
 
@@ -79,22 +95,58 @@ namespace nsg {
 
 */
 namespace nsg {
-    GA::GA(int n) {
+    GA::GA(int popSize, int dnaSize, int maxGen, float x, float y, float width, int height, float Sx, float Sy) {
+        populationSize = popSize;
+        dnaLen = dnaSize;
+        maxGeneration = maxGen;
 
+        initPopulation(x, y, width, height, Sx, Sy);
     }
-    void GA::crossOver() {
-
+    void GA::initPopulation(float x, float y, float width, int height, float Sx, float Sy) {
+        for(int i = 0; i < populationSize; i++) {
+            population.push_back(
+                new DNA(
+                dnaLen,
+                x, y,
+                width, height,
+                Sx, Sy
+                )
+            );
+        }
     }
-    void GA::initPopulation() {
-
+    void GA::pushBack(DNA* a) {
+        population.push_back(a);
     }
-    void GA::addPopulation() {
-
+    void GA::popBack(){
+        population.pop_back();
     }
-
-    float GA::caculateSimilarity(DNA& dna1) {
-        float ret;
-        return ret;
+    void GA::drawDNA(int idx) {
+        population[idx]->drawAll();
     }
+    DNA* GA::top(){
+        return population.back();
+    }
+    void GA::caculateFitness() {
+        for(int i = 0; i < populationSize; i++) {
+            population[i]->fitnessRef()
+             = fitnessFunction(
+                 greyscaledOriginFile,
+                 population[i]->getPicture()
+                );
+        }
+    }
+    
+    void GA::sortDNA() {
+        std::sort(population.begin(), population.end(), comp);
+    }
+}    
+bool comp(nsg::DNA* a, nsg::DNA* b) {
+    return a->fitnessRef() < b->fitnessRef();
+}
+float fitnessFunction(GLubyte** a, GLubyte** b) {
+    int ret = rand()%10;
+    //need delete b
 
+    delete[] b;
+    return (float)ret;
 }

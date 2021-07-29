@@ -12,5 +12,5 @@ void main()
    vec4 tmpColor = texture(texture0, texCoord);
    if(tmpColor.a < 0.05)
         discard;   
-   FragColor = vec4(tmpColor.rgb * bright, 1);
+   FragColor = vec4(tmpColor.rgb * bright, 0.6);
 }

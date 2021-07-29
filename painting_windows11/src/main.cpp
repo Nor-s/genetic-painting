@@ -6,7 +6,8 @@
 #include <vector>
 
 #define DEPTH_TEST
-//#define SEMAPHORE_TEST
+//#define DEBUG_MODE
+#define SEMAPHORE_TEST
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
@@ -23,7 +24,8 @@ void windowResizeCallback(GLFWwindow* windowPointer, int width, int height);
 void pos_callback(GLFWwindow* window, int x, int y);
 
 std::vector<nsg::myWindow*> windows;
-nsg::myPainting* picture;
+nsg::myPainting* picture = nullptr;
+nsg::GA* ga = nullptr;
 
 int main() {
     srand (static_cast <unsigned> (time(0)));  
@@ -41,11 +43,36 @@ int main() {
     glfwSetDropCallback(windows[0]->getWindow(), drop_callback);
     glfwSetFramebufferSizeCallback(windows[0]->getWindow(), windowResizeCallback);
 	glfwSetWindowPosCallback(windows[0]->getWindow(), pos_callback);
+    //for drop image
+    while(windows.size() == 1&&!glfwWindowShouldClose(windows[0]->getWindow())) {
+        processInput();
+        glfwPollEvents();
+    }
 
+#ifdef DEBUG_MODE
+    std::cout<<"second loop start\n";
+#endif
+    glfwMakeContextCurrent(windows[1]->getWindow());
+    if(ga == nullptr) {
+        ga = new nsg::GA (
+            20, 10, 100, 
+            0.0f, 0.0f, 
+            windows[0]->SCR_WIDTH, windows[0]->SCR_HEIGHT,
+            1.0f, 1.0f
+        );
+    }
+#ifdef DEPPTH_TEST
+    glEnable(GL_DEPTH_TEST);
+#endif
+    glEnable(GL_BLEND);  
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //for startGA
     while(!glfwWindowShouldClose(windows[0]->getWindow())) {
         processInput();
         drawDisplay0();
-        drawDisplay1();
+        drawDisplay1();        
+
+
         glfwPollEvents();
     }
 
@@ -60,13 +87,12 @@ void drawDisplay1(){
         glfwMakeContextCurrent(windows[1]->getWindow());
         windows[1]->windowClear(GL_COLOR_BUFFER_BIT, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        nsg::DNA tmp (
-            10,
-            0.0f, 0.0f,
-            windows[0]->SCR_WIDTH, windows[0]->SCR_HEIGHT,
-            1.0, 1.0
-        );
-        tmp.drawAll();       
+        if(ga != nullptr) {
+            ga->top()->drawAll();
+            ga->caculateFitness();
+            ga->sortDNA();
+            //ga->drawDNA(rand()%10);
+        }
         glfwSwapBuffers(windows[1]->getWindow());
         nsg::myWindow::drawingUnLock();
     }
@@ -75,9 +101,9 @@ void drawDisplay1(){
 void drawDisplay0() {
     if(windows.size() == 2) {
         nsg::myWindow::drawingLock();
+        glfwMakeContextCurrent(windows[0]->getWindow());
 
        windows[0]->windowClear(GL_COLOR_BUFFER_BIT, 0.0f, 0.2f, 0.2f, 1.0f);
-        glfwMakeContextCurrent(windows[0]->getWindow());
         picture->setProjectionToUniform(nsg::myWindow::projection);
         picture->draw();
         glfwSwapBuffers(windows[0]->getWindow());
@@ -87,20 +113,17 @@ void drawDisplay0() {
 }
 
 void processInput() {
-    static int count = 1;
     if (glfwGetKey(windows[0]->getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(windows[0]->getWindow(), true);
     }
-    if (glfwGetKey(windows[0]->getWindow(), GLFW_KEY_S) == GLFW_PRESS) {
-        if(count == 0) {
-            count = 1;
-        }
-    }
-    if (windows.size() == 2 && glfwGetKey(windows[1]->getWindow(), GLFW_KEY_1) == GLFW_PRESS) {
+    else if (windows.size() == 2 && glfwGetKey(windows[1]->getWindow(), GLFW_KEY_1) == GLFW_PRESS) {
         nsg::myWindow::drawingLock();
+        
         glDrawBuffer(GL_BACK);
+        windows[1]->windowClear(GL_COLOR_BUFFER_BIT, 1.0, 1.0, 1.0, 1.0);
         drawDisplay1();
         windows[1]->windowCapture("sdf");
+        
         nsg::myWindow::drawingUnLock();
     }
 }
@@ -112,15 +135,22 @@ void drop_callback(GLFWwindow* window, int count, const char** paths)
     }
     int i;
     for (i = 0;  i < 1;  i++) {
+        nsg::myWindow::drawingLock();
+
         picture = new nsg::myPainting(paths[i]);
         int posx, posy;
-        glfwSetWindowSize(windows[0]->getWindow(), picture->texWidth, picture->texHeight);
+        int width = picture->texWidth, height = picture->texHeight;
+
+        glfwSetWindowSize(windows[0]->getWindow(), width, height);
         glfwGetWindowPos(windows[0]->getWindow(), &posx, &posy);
 
-        windows.push_back(new nsg::myWindow(picture->texWidth, picture->texHeight, "painting"));
-        glfwSetWindowPos(windows[1]->getWindow(), posx+picture->texWidth, posy);
+
+        windows.push_back(new nsg::myWindow(width, height, "painting"));
+        glfwSetWindowPos(windows[1]->getWindow(), posx+width, posy);
         glfwSetFramebufferSizeCallback(windows[1]->getWindow(), windowResizeCallback);
 	    glfwSetWindowPosCallback(windows[1]->getWindow(), pos_callback);
+
+        nsg::myWindow::drawingUnLock();
 
         drawDisplay0();
     }
@@ -133,7 +163,7 @@ void windowResizeCallback(GLFWwindow* windowPointer, int width, int height) {
     nsg::myWindow::projection = glm::ortho(
          -(float)nsg::myWindow::SCR_WIDTH/2.0f * widthFactor, (float)nsg::myWindow::SCR_WIDTH/2.0f * widthFactor, 
          -(float)nsg::myWindow::SCR_HEIGHT/2.0f * heightFactor, (float)nsg::myWindow::SCR_HEIGHT/2.0f * heightFactor, 
-        0.0f, 100.0f
+        0.1f, 100.0f
     );
 
     drawDisplay0();

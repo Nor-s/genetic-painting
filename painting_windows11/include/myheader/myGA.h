@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include "myHeader/myWindow.h"
-#include "myHeader/myPainting.h"
+#include "myheader/myWindow.h"
+#include "myheader/myPainting.h"
 /*
             dna.first     : individual similarity (later)
             dna.second    : chromosome : brush : pos, size, angle, brush type, brightness
@@ -26,9 +26,10 @@ namespace nsg {
         std::vector<std::pair<float, myPainting*> > dna;
         std::vector<std::pair<bool, myPainting*>> brushPointers;
 
+        float fitness;
         int dnaSize;
-        float similarity;
     public:  
+
         DNA(DNA& a, DNA& b);
         DNA(int n, float x, float y, float width, int height, float Sx, float Sy);
         ~DNA();
@@ -42,26 +43,36 @@ namespace nsg {
         void draw(int i);    
         void drawAll();
         int size();
+        float& fitnessRef();
 
         GLubyte** getPicture();
     };
 
     class GA {
     private:
-        std::vector<DNA> population;
+        std::vector<DNA*> population;
         GLubyte** greyscaledOriginFile;
         GLubyte** currentPicture;
 
+        int dnaLen;
         int populationSize;
+        int maxGeneration;
+        int currentGeneration;
     public:
-        GA(int n);
+        GA(int popSize, int dnaSize, int maxGen, float x, float y, float width, int height, float Sx, float Sy);
+        ~GA();
         void crossOver();
-        void initPopulation();
-        void addPopulation();
-
-        float caculateSimilarity(DNA& dna1);
+        void initPopulation(float x, float y, float width, int height, float Sx, float Sy);
+        void pushBack(DNA* a);
+        void popBack();
+        DNA* top();
+        void drawDNA(int idx);
+        void caculateFitness();
+        void sortDNA();
 
     };
 }
+bool comp(nsg::DNA* a, nsg::DNA* b);
+float fitnessFunction(GLubyte** a, GLubyte** b);
 
 #endif
