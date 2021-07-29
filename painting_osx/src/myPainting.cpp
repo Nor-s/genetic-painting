@@ -1,14 +1,13 @@
 #include "myheader/myPainting.h"
 
 namespace nsg {
-    myPainting::myPainting(int width, int height) {
+    myPainting::myPainting(float x, float y, float width, float height, float Sx, float Sy) {
         texture = initTexture(tex[rand()%4], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
         setVertices(true);
         initObject();
         shader = new Shader(vertexShader, fragmentShader);
         initTextureUnit();
-        initTransform();
-        setTransformToRand(width, height);
+        setTransformToRand(x, y, width, height, Sx, Sy);
         setTransformToUniform();
         
         setBrightToUniform(getRandFloat(0.0, 1.0));
@@ -24,13 +23,15 @@ namespace nsg {
         setTransformToUniform();
         setBrightToUniform(1.0f);
     }
-    //maybe not safe
     myPainting::~myPainting() {
+    #ifdef DEBUG_MOD
+        std::cout<<"~~~~painting\n";
+    #endif
         glDeleteTextures(1, &texture);
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
- //       delete shader;
+        delete shader;
     }
     unsigned int myPainting::initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType) {
         unsigned int ID;
@@ -44,6 +45,7 @@ namespace nsg {
         // load and generate the texture
         int nrChannels;
         unsigned char *data = stbi_load(fileName, &texWidth, &texHeight, &nrChannels, 0);
+
         if (data) {
             glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texWidth, texHeight, 0, originalFormat, originalType, data);
             glGenerateMipmap(GL_TEXTURE_2D);
@@ -51,7 +53,9 @@ namespace nsg {
         else {
             std::cout << "Failed to load texture" << std::endl;
         }
-
+    #ifdef __APPLE__
+        texWidth*=0.7, texHeight *=0.7;
+    #endif
         stbi_image_free(data);
         return ID;
     }
@@ -119,14 +123,16 @@ namespace nsg {
         shader->use();
         shader->setMat4("model", transform);
     }
-    void myPainting::setTransformToRand(int width, int height) {
-        float randT[2] = {getRandFloat(-(float)width/2.0f, (float)width/2.0f), getRandFloat(-(float)height/2.0f, (float)height/2.0f)};
+    void myPainting::setTransformToRand(float x, float y, float width, float height, float Sx, float Sy) {
+        float randT[2] = {getRandFloat(-width/2.0f + x, width/2.0f+ x), getRandFloat(-height/2.0f + y, height/2.0f + y)};
+        float randZ = getRandFloat(0.1f, 50.0f);
         float randSx = getRandFloat(0.15f, 0.3f);
         float randSy = getRandFloat(0.125f, 0.275f);
         float randDegree = getRandFloat(0.0f, 360.0f);
-
+        initTransform();
         translate(randT[0], randT[1], 0.0f);
         scale(randSx, randSy, 1.0f);
+        scale(Sx, Sy, 1.0f);
         rotate(randDegree);
     }
     void myPainting::setBrightToUniform(float bright) {

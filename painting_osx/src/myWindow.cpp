@@ -1,21 +1,32 @@
 #include "myheader/myWindow.h"
 
 namespace nsg {    
-    int myWindow::SCR_HEIGHT;
-    int myWindow::SCR_WIDTH;
+    std::map<int, myWindow*> myWindow::windowDictionary;
+    int myWindow::size = 0;
+    bool myWindow::drawingSemaphore = true;
+    int myWindow::SCR_HEIGHT = 800;
+    int myWindow::SCR_WIDTH = 800;
     glm::mat4 myWindow::projection;
+
 
     myWindow::myWindow(int width, int height, const char* title) {
         stbi_flip_vertically_on_write(true);
+        createWindow(width, height, title);
+        windowDictionary[size++] = this; 
+    }
+    void myWindow::createWindow(int width, int height, const char* title) {
         currentWidth = SCR_WIDTH = width;
         currentHeight = SCR_HEIGHT = height;
         window = initWindow(width, height, title);
         projection = glm::ortho(
             (float)-width/2.0f, (float)width/2.0f,
             (float)-height/2.0f, (float)height/2.0f,
-            0.0f, 100.0f
+            -100.0f, 100.0f
         );
         initPBO();
+    }
+    void myWindow::deleteWindow() {
+        glfwDestroyWindow(window);
     }
     
     GLFWwindow* myWindow::initWindow(int width, int height, const char* title) {
@@ -23,6 +34,9 @@ namespace nsg {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    #ifdef WINDOW_RESIZABLE
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    #endif
     #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
@@ -49,9 +63,19 @@ namespace nsg {
     GLFWwindow* myWindow::getWindow() {
         return window;
     }
+    void myWindow::drawingLock() {
+    #ifdef SEMAPHORE_TEST
+        while(!drawingSemaphore){
+        }
+    #endif
+        drawingSemaphore = false;
+    }
+    void myWindow::drawingUnLock() {
+        drawingSemaphore = true;
+    }
     void myWindow::initPBO(){
         glfwGetWindowSize(getWindow(), &currentWidth, &currentHeight);
-        unsigned int bufferSize = currentWidth * currentHeight * 3;
+        unsigned int bufferSize = currentWidth * (currentHeight/2) * 3;
 
         //pbo gen
         glGenBuffers(2, PBO);
@@ -75,10 +99,12 @@ namespace nsg {
     #endif
     }
 
-    void myWindow::windowCapture(const char *strFilePath) {
-        glfwMakeContextCurrent(getWindow());
+    GLubyte** myWindow::getWindowPixel() {
+        GLubyte** pboMem = new GLubyte*[2];
+
+    #ifdef WINDOW_RESIZABLE
         initPBO();
-        glDrawBuffer(GL_FRONT);//(GL_BACK);
+    #endif
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glReadPixels(
@@ -91,7 +117,7 @@ namespace nsg {
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
     	glReadPixels(
-    		0, currentWidth/2,					    
+    		0, currentHeight/2,					    
     		currentWidth, currentHeight/2,		
     		GL_BGR,					    
     		GL_UNSIGNED_BYTE,    		
@@ -101,20 +127,30 @@ namespace nsg {
 // Process partial images.  Mapping the buffer waits for
 // outstanding DMA transfers into the buffer to finish.
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
-        GLubyte* pboMem1 = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-        stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem1, SCR_WIDTH*3);
+        pboMem[0] = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
-        GLubyte* pboMem2 = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-        stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem1, SCR_WIDTH*3);
+        pboMem[1] = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
-     //   glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        //unmap the buffer
+
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-
+       
+    #ifdef WINDOW_RESIZABLE
         glDeleteBuffers(2, PBO);
+    #endif
+        return pboMem;
     }
+
+    void myWindow::windowCapture(const char *strFilePath) {
+        int strideSize = SCR_WIDTH*3; //+ SCR_WIDTH%4;
+
+        GLubyte** pboMem = getWindowPixel();
+
+        stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem[0], strideSize);
+        stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem[1], strideSize);
+        //delete
+   }
 
 }
