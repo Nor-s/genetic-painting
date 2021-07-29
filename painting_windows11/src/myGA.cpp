@@ -79,6 +79,7 @@ namespace nsg {
         glfwMakeContextCurrent(myWindow::windowDictionary[1]->getWindow());
         glDrawBuffer(GL_BACK);
         myWindow::windowDictionary[1]->windowClear(GL_COLOR_BUFFER_BIT, 1.0, 1.0, 1.0, 1.0);
+        //drawing back()
         drawAll();
         GLubyte** ret = myWindow::windowDictionary[1]->getWindowPixel();
         myWindow::drawingUnLock();
@@ -98,8 +99,10 @@ namespace nsg {
     GA::GA(int popSize, int dnaSize, int maxGen, float x, float y, float width, int height, float Sx, float Sy) {
         populationSize = popSize;
         dnaLen = dnaSize;
+        currentGeneration = 0;
         maxGeneration = maxGen;
-
+        originImageHeight = myWindow::SCR_HEIGHT;
+        originImageWidth = myWindow::SCR_WIDTH;
         initPopulation(x, y, width, height, Sx, Sy);
     }
     void GA::initPopulation(float x, float y, float width, int height, float Sx, float Sy) {
@@ -116,37 +119,78 @@ namespace nsg {
     }
     void GA::pushBack(DNA* a) {
         population.push_back(a);
+        populationSize++;
     }
     void GA::popBack(){
         population.pop_back();
+        populationSize--;
     }
     void GA::drawDNA(int idx) {
         population[idx]->drawAll();
+    }
+    void GA::setOriginPicture(myPainting* picture){
+        myWindow::drawingLock();
+        GLFWwindow* tmpWindow = glfwGetCurrentContext();
+
+        glfwMakeContextCurrent(myWindow::windowDictionary[0]->getWindow());
+        glDrawBuffer(GL_BACK);
+        myWindow::windowDictionary[0]->windowClear(GL_COLOR_BUFFER_BIT, 1.0, 1.0, 1.0, 1.0);
+        picture->setProjectionToUniform(myWindow::projection);
+        picture->draw();
+        GLubyte** ret = myWindow::windowDictionary[1]->getWindowPixel();
+
+        glfwMakeContextCurrent(tmpWindow);
+        myWindow::drawingUnLock();
+        grayscaledOriginPicture = ret;
     }
     DNA* GA::top(){
         return population.back();
     }
     void GA::caculateFitness() {
         for(int i = 0; i < populationSize; i++) {
+
             population[i]->fitnessRef()
              = fitnessFunction(
-                 greyscaledOriginFile,
-                 population[i]->getPicture()
+                 grayscaledOriginPicture,
+                 population[i]->getPicture(),
+                 originImageWidth,
+                 originImageHeight
                 );
         }
     }
-    
+    int GA::size() {
+        return populationSize;
+    }
+    float GA::getFitness(int idx) {
+        return population[idx]->fitnessRef();
+    }
+
     void GA::sortDNA() {
         std::sort(population.begin(), population.end(), comp);
+    }
+    void GA::setCurrentPicture() {
+
+    }
+    void GA::nextGeneration() {
+        
     }
 }    
 bool comp(nsg::DNA* a, nsg::DNA* b) {
     return a->fitnessRef() < b->fitnessRef();
 }
-float fitnessFunction(GLubyte** a, GLubyte** b) {
-    int ret = rand()%10;
-    //need delete b
-
+/*
+    using cosine similarity:  https://en.wikipedia.org/wiki/Cosine_similarity
+*/
+float fitnessFunction(GLubyte** a, GLubyte** b, int width, int height) {
+    float dot = 0.0f, denomA = 0.0f, denomB = 0.0f;
+    for(int i = 0; i < width*3; i += 3) {
+        for(int j = 0; j < height/2; j++) {
+            int k = i + j*width*3;
+            dot += (a[0][k]*b[0][k] + a[1][k]*b[1][k]);
+            denomA += (a[0][k]*a[0][k] + a[1][k]*a[1][k]);
+            denomB += (b[0][k]*b[0][k] + b[1][k]*b[1][k]);
+        }
+    }
     delete[] b;
-    return (float)ret;
+    return dot/(sqrt(denomA)*sqrt(denomB));
 }

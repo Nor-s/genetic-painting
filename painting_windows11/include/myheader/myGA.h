@@ -51,13 +51,14 @@ namespace nsg {
     class GA {
     private:
         std::vector<DNA*> population;
-        GLubyte** greyscaledOriginFile;
+        GLubyte** grayscaledOriginPicture;
         GLubyte** currentPicture;
 
         int dnaLen;
         int populationSize;
         int maxGeneration;
         int currentGeneration;
+        int originImageWidth, originImageHeight;
     public:
         GA(int popSize, int dnaSize, int maxGen, float x, float y, float width, int height, float Sx, float Sy);
         ~GA();
@@ -69,10 +70,15 @@ namespace nsg {
         void drawDNA(int idx);
         void caculateFitness();
         void sortDNA();
+        void setOriginPicture(myPainting* picture);
+        int size();
+        float getFitness(int idx);
+        void nextGeneration();
+        void setCurrentPicture();
 
     };
 }
 bool comp(nsg::DNA* a, nsg::DNA* b);
-float fitnessFunction(GLubyte** a, GLubyte** b);
+float fitnessFunction(GLubyte** a, GLubyte** b, int width, int height);
 
 #endif
