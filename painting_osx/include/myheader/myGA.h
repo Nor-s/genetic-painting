@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include "myheader/myWindow.h"
+#include "myheader/window_control.h"
 #include "myheader/myPainting.h"
 /*
             dna.first     : individual similarity (later)
@@ -97,13 +97,14 @@ namespace nsg {
         void popBack();
         DNA* top();
         void drawDNA(int idx);
-        void caculateFitness();
         void sortDNA();
-        void setOriginPicture(myPainting* picture);
         int size();
         double getFitness(int idx);
         void nextGeneration();
         void setCurrentPicture();
+
+        void set_picture_to_data(myPainting* picture);
+        void caculateFitness();
 
     };
 }
