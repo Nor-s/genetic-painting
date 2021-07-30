@@ -43,9 +43,9 @@ namespace nsg
 #ifdef DEBUG_MODE
             std::cout << paths[i] << "\n";
 #endif
-            WindowControl::picture_ = new myPainting(paths[i]);
+            GeneticAlgorithm::picture_ = new myPainting(paths[i]);
             int posx, posy;
-            int width = WindowControl::picture_->texWidth, height = WindowControl::picture_->texHeight;
+            int width = GeneticAlgorithm::picture_->texWidth, height = GeneticAlgorithm::picture_->texHeight;
 
             glfwSetWindowSize(WindowControl::g_windows_[0]->get_window(), width, height);
             glfwGetWindowPos(WindowControl::g_windows_[0]->get_window(), &posx, &posy);

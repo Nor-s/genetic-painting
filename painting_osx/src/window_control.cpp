@@ -2,7 +2,6 @@
 
 namespace nsg
 {
-    myPainting *WindowControl::picture_ = nullptr;
     std::vector<WindowControl *> WindowControl::g_windows_;
     int WindowControl::size_ = 0;
     bool WindowControl::rendering_semaphore_ = true;
@@ -16,10 +15,6 @@ namespace nsg
         width_ = g_width_ = width;
         height_ = g_height_ = height;
         window_ = init_window();
-        Shader::projection_matrix = glm::ortho(
-            (float)-width / 2.0f, (float)width / 2.0f,
-            (float)-height / 2.0f, (float)height / 2.0f,
-            0.0f, 100.0f);
         init_pbo();
         size_++;
     }

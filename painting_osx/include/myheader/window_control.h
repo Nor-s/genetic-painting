@@ -10,7 +10,6 @@
 #include <iostream>
 #include <vector>
 
-#include "myheader/myPainting.h"
 #include "learnopengl/stb_image_write.h"
 
 
@@ -27,7 +26,6 @@ namespace nsg {
         unsigned int pbo_[2];
     public:        
         static GLubyte** grayscale_picture_;
-        static myPainting *picture_;
         static int g_width_;
         static int g_height_;
         static int size_;

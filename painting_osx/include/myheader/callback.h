@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "myheader/window_control.h"
+#include "myheader/genetic_algorithm.h"
 
 #include <stdlib.h>
 #include <time.h>
