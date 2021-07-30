@@ -31,7 +31,8 @@ namespace nsg {
         static std::map<int, myWindow*> windowDictionary;
         static void drawingLock();
         static void drawingUnLock();
-    
+        
+        void screenshot(GLubyte** pboMem);
         myWindow(int width, int height, const char* title);
         GLFWwindow* initWindow(int width, int height, const char* name);
         GLFWwindow* getWindow();

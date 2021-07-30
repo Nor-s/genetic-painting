@@ -1,16 +1,16 @@
 #include "myheader/myPainting.h"
 
 namespace nsg {
-    myPainting::myPainting(float x, float y, float width, float height, float Sx, float Sy) {
-        texture = initTexture(tex[rand()%4], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
-        setVertices(true);
+    myPainting::myPainting(int idx) {
+        texture = initTexture(tex[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+        setVertices(false);
         initObject();
         shader = new Shader(vertexShader, fragmentShader);
         initTextureUnit();
-        setTransformToRand(x, y, width, height, Sx, Sy);
+        initTransform();
+        translate(0.0f, 0.0f, 0.0f);
         setTransformToUniform();
-        
-        setBrightToUniform(getRandFloat(0.0, 1.0));
+        setBrightToUniform(1.0);
     }
     myPainting::myPainting(const char* filePath) {
         stbi_set_flip_vertically_on_load(true);
@@ -20,6 +20,7 @@ namespace nsg {
         shader = new Shader(grayVertexShader, grayFragmentShader);
         initTextureUnit();
         initTransform();
+        translate(0.0f, 0.0f, 0.0f);
         setTransformToUniform();
         setBrightToUniform(1.0f);
     }
@@ -123,21 +124,12 @@ namespace nsg {
         shader->use();
         shader->setMat4("model", transform);
     }
-    void myPainting::setTransformToRand(float x, float y, float width, float height, float Sx, float Sy) {
-        float randT[2] = {getRandFloat(-width/2.0f + x, width/2.0f+ x), getRandFloat(-height/2.0f + y, height/2.0f + y)};
-        float randZ = getRandFloat(0.1f, 50.0f);
-        float randSx = getRandFloat(0.15f, 0.3f);
-        float randSy = getRandFloat(0.125f, 0.275f);
-        float randDegree = getRandFloat(0.0f, 360.0f);
-        initTransform();
-        translate(randT[0], randT[1], 0.0f);
-        scale(randSx, randSy, 1.0f);
-        scale(Sx, Sy, 1.0f);
-        rotate(randDegree);
-    }
     void myPainting::setBrightToUniform(float bright) {
         shader->use();
         shader->setFloat("bright", bright);
+    }
+    void myPainting::translate(float t[3]) {
+        transform = glm::translate(transform, glm::vec3(t[0], t[1], t[2]));
     }
     void myPainting::translate(float tx, float ty, float tz) {
         transform = glm::translate(transform, glm::vec3(tx, ty, tz));
@@ -145,13 +137,14 @@ namespace nsg {
     void myPainting::rotate(float degree) {
         transform = glm::rotate(transform, glm::radians(degree) ,glm::vec3(0.0f, 0.0f, 1.0f));
     }
+    void myPainting::scale(float s) {
+        transform = glm::scale(transform, glm::vec3(s, s, s));
+    }
     void myPainting::scale(float sx, float sy, float sz) {
         transform = glm::scale(transform, glm::vec3(sx, sy, sz));
     }
     void myPainting::setColor() {
         return;
     }
-    float myPainting::getRandFloat(float lo, float hi) {
-        return lo + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(hi-lo)));
-    }
+
 }

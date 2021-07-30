@@ -21,7 +21,7 @@ namespace nsg {
         projection = glm::ortho(
             (float)-width/2.0f, (float)width/2.0f,
             (float)-height/2.0f, (float)height/2.0f,
-            -100.0f, 100.0f
+            0.0f, 100.0f
         );
         initPBO();
     }
@@ -58,6 +58,7 @@ namespace nsg {
             std::cout << "Failed to initialize GLAD" << std::endl;
             return nullptr;
         }
+ 
         return window;
     }
     GLFWwindow* myWindow::getWindow() {
@@ -92,19 +93,13 @@ namespace nsg {
 
     void myWindow::windowClear(GLbitfield mask, GLfloat r, GLfloat g, GLfloat b, GLfloat w) {
         glClearColor(r, g, b, w);
-    #ifdef DEEPTH_TEST
-        glClear(mask | GL_DEPTH_TEST);
-    #else
-        glClear(mask);
-    #endif
+        glClear(GL_DEPTH_BUFFER_BIT | mask);
     }
 
     GLubyte** myWindow::getWindowPixel() {
         GLubyte** pboMem = new GLubyte*[2];
 
-    #ifdef WINDOW_RESIZABLE
         initPBO();
-    #endif
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glReadPixels(
@@ -132,25 +127,51 @@ namespace nsg {
         pboMem[1] = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
 
+
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[0]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, PBO[1]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
        
-    #ifdef WINDOW_RESIZABLE
         glDeleteBuffers(2, PBO);
-    #endif
         return pboMem;
     }
 
     void myWindow::windowCapture(const char *strFilePath) {
-        int strideSize = SCR_WIDTH*3; //+ SCR_WIDTH%4;
+        int strideSize = SCR_WIDTH*3+ SCR_WIDTH%4;
 
         GLubyte** pboMem = getWindowPixel();
+        GLubyte* full = new GLubyte[currentWidth*currentHeight*3];
+        int size = strideSize*currentHeight;
+        for(int i = 0; i < size/2; i++) {
+                full[i] = pboMem[0][i];
+                full[i+size/2] = pboMem[1][i];
+        }
 
         stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem[0], strideSize);
         stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem[1], strideSize);
+        stbi_write_png("s1111.png", currentWidth, currentHeight, 3, full, strideSize);
+
+        delete[] full;
+        delete[] pboMem;
         //delete
-   }
+    }
+
+    void myWindow::screenshot(GLubyte** pboMem) {
+        int strideSize = SCR_WIDTH*3 + SCR_WIDTH%4;
+
+        GLubyte* full = new GLubyte[currentWidth*currentHeight*3];
+        int size = strideSize*currentHeight;
+        for(int i = 0; i < size/2; i++) {
+                full[i] = pboMem[0][i];
+                full[i+size/2] = pboMem[1][i];
+        }
+
+        stbi_write_png("s11.png", currentWidth, currentHeight/2, 3, pboMem[0], strideSize);
+        stbi_write_png("s111.png", currentWidth, currentHeight/2, 3, pboMem[1], strideSize);
+        stbi_write_png("s1111.png", currentWidth, currentHeight, 3, full, strideSize);
+
+    }
+
 
 }

@@ -42,12 +42,11 @@ namespace nsg {
         unsigned int VBO;
         unsigned int EBO;
         Shader* shader;
-        float currentColor[4];
         glm::mat4 transform;
     public:
         int texWidth;
         int texHeight;
-        myPainting(float x, float y, float width, float height, float Sx, float Sy);
+        myPainting(int idx);
         myPainting(const char* filePath);
         ~myPainting();
         unsigned int initTexture(const char* fileName, GLint internalFormat, GLenum originalFormat, GLenum originalType);
@@ -58,15 +57,14 @@ namespace nsg {
         void setProjectionToUniform(const glm::mat4& projection);
         void setTransformToUniform();
         // viewport coordinate and size scale
-        void setTransformToRand(float x, float y, float width, float height, float Sx, float Sy);
         void setBrightToUniform(float bright);
         void setColor();
+        void translate(float t[3]);
         void translate(float tx, float ty, float tz);
         void rotate(float degree);
+        void scale(float s);
         void scale(float sx, float sy, float sz);
         void draw();
-
-        static float getRandFloat(float lo, float hi);
     };
 }
 #endif
