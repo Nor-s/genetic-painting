@@ -15,6 +15,7 @@ namespace nsg {
 
         GLubyte** grayscale_picture_;
     public:
+        static GeneticAlgorithm *manager_;
         static Population* population_;
         static SquareObject *picture_;
         GeneticAlgorithm(int population_size, int dna_len, int max_stage);

@@ -12,6 +12,7 @@
 
 namespace nsg
 {
+    void render_callback();
     void init_callback(GLFWwindow *window);
     void drop_callback(GLFWwindow *window, int count, const char **paths);
     void resize_callback(GLFWwindow *window, int width, int height);

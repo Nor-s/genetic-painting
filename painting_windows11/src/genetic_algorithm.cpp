@@ -2,6 +2,7 @@
 
 namespace nsg
 {
+    GeneticAlgorithm *GeneticAlgorithm::manager_ = nullptr;
     SquareObject *GeneticAlgorithm::picture_ = nullptr;
     Population *GeneticAlgorithm::population_ = nullptr;
 
@@ -10,6 +11,7 @@ namespace nsg
         population_size_ = population_size;
         dna_len_ = dna_len;
         max_stage_ = max_stage;
+        manager_ = this;
     }
     void GeneticAlgorithm::loop_until_drop()
     {

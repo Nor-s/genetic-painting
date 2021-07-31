@@ -2,6 +2,12 @@
 
 namespace nsg
 {
+    void render_callback() {
+       if(GeneticAlgorithm::manager_ != nullptr) {
+            GeneticAlgorithm::manager_->rendering_0();
+            GeneticAlgorithm::manager_->rendering_1();
+        }
+    }
     void init_callback(GLFWwindow *window)
     {
         //callback
@@ -9,7 +15,6 @@ namespace nsg
         glfwSetFramebufferSizeCallback(window, resize_callback);
         glfwSetWindowPosCallback(window, pos_callback);
     }
-
     void pos_callback(GLFWwindow *window, int x, int y)
     {
         // for adjacent two window
@@ -19,6 +24,7 @@ namespace nsg
         {
             glfwSetWindowPos(WindowControl::g_windows_[1]->get_window(), posx + WindowControl::g_windows_[0]->g_width_, posy);
         }
+        render_callback();
     }
     void resize_callback(GLFWwindow *windowPointer, int width, int height)
     {
@@ -29,6 +35,8 @@ namespace nsg
             -(float)WindowControl::g_width_ / 2.0f * widthFactor, (float)WindowControl::g_width_ / 2.0f * widthFactor,
             -(float)WindowControl::g_height_ / 2.0f * heightFactor, (float)WindowControl::g_height_ / 2.0f * heightFactor,
             0.0f, 100.0f);
+
+        render_callback();
     }
     void drop_callback(GLFWwindow *window, int count, const char **paths)
     {
@@ -57,7 +65,6 @@ namespace nsg
             glEnable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
             WindowControl::rendering_unlock();
         }
     }
