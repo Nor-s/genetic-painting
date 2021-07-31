@@ -4,24 +4,21 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
-#define DEBUG_MODE
-#define SEMAPHORE_TEST
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
-#include "myheader/myGA.h"
 #include "myheader/callback.h"
-#include "myheader/myPainting.h"
 
 using namespace nsg;
 
 GeneticAlgorithm *g_genetic_manager;
 
-int g_population_size = 100;
-int g_dna_len         = 50;
-int g_max_stage       = 100;
+std::pair<float, float> g_brush_width = {0.05, 0.1};
+int g_population_size = 20;
+int g_dna_len = 10;
+int g_max_stage = 100;
 
 int main()
 {
@@ -30,25 +27,16 @@ int main()
     glfwInit();
     WindowControl::g_windows_.push_back(new WindowControl(300, 300, "Picture"));
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    init_callback(WindowControl::g_windows_[0]->get_window());
+    init_callback(WindowControl::g_windows_[0]->get_window(), true);
 
     g_genetic_manager = new GeneticAlgorithm(
         g_population_size,
         g_dna_len,
-        g_max_stage
-    );
+        g_max_stage,
+        g_brush_width);
 
     g_genetic_manager->loop_until_drop();
-            /*
-            Shader::projection_matrix = glm::ortho(
-            (float)-width / 2.0f, (float)width / 2.0f,
-            (float)-height / 2.0f, (float)height / 2.0f,
-            0.0f, 100.0f)
-            */
+
     g_genetic_manager->init_population();
     g_genetic_manager->start_main_loop();
 

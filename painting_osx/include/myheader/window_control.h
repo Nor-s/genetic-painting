@@ -23,7 +23,7 @@ namespace nsg {
         int height_;
         std::string title_;
 
-        unsigned int pbo_[2];
+        unsigned int pbo_[3];
     public:        
         static GLubyte** grayscale_picture_;
         static int g_width_;
@@ -33,14 +33,19 @@ namespace nsg {
         static void rendering_lock();
         static void rendering_unlock();
         
-        void screenshot(GLubyte** pboMem);
         WindowControl(int width, int height, const char* title);
+        ~WindowControl();
         GLFWwindow* init_window();
         GLFWwindow* get_window();
         void init_pbo();
-        void window_clear_white();
-        GLubyte** get_window_pixel();
-        void window_capture(const char* filePath);
+        void clear_window_white();
+        GLubyte** get_window_halfpixel();
+        GLubyte** get_window_fullpixel();
+        void window_to_file(const char* filename);
+        void byte_to_file(GLubyte** pboMem, const char* filename);
+        void set_buffersize_pbo();
+
+        void resize_window(int width, int height);
     };
 
 }

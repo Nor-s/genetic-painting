@@ -1,15 +1,19 @@
 #include "myheader/genetic_algorithm.h"
 
+#define DEBUG_MODE
 namespace nsg
 {
-    myPainting *GeneticAlgorithm::picture_ = nullptr;
-    GA *GeneticAlgorithm::genetic_algo_ = nullptr;
+    GeneticAlgorithm *GeneticAlgorithm::manager_ = nullptr;
+    SquareObject *GeneticAlgorithm::picture_ = nullptr;
+    Population *GeneticAlgorithm::population_ = nullptr;
 
-    GeneticAlgorithm::GeneticAlgorithm(int population_size, int dna_len, int max_stage)
+    GeneticAlgorithm::GeneticAlgorithm(int population_size, int dna_len, int max_stage, std::pair<float, float> brush_width)
     {
         population_size_ = population_size;
         dna_len_ = dna_len;
         max_stage_ = max_stage;
+        brush_width_ = brush_width;
+        manager_ = this;
     }
     void GeneticAlgorithm::loop_until_drop()
     {
@@ -26,22 +30,24 @@ namespace nsg
         {
             process_input();
             rendering_0();
+            glfwSwapBuffers(WindowControl::g_windows_[0]->get_window());
             rendering_1();
-
+            glfwSwapBuffers(WindowControl::g_windows_[1]->get_window());
             glfwPollEvents();
         }
     }
     void GeneticAlgorithm::init_population()
     {
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
-        if (genetic_algo_ == nullptr)
+        if (population_ == nullptr)
         {
-            genetic_algo_ = new GA(
+            Brush::init_brushes();
+            population_ = new Population(
                 population_size_, dna_len_, max_stage_,
                 0.0f, 0.0f,
                 WindowControl::g_width_, WindowControl::g_height_,
-                0.05f, 0.2f);
-            genetic_algo_->set_picture_to_data(picture_);
+                brush_width_);
+            set_picture_to_data(picture_);
         }
     }
 
@@ -53,14 +59,16 @@ namespace nsg
         }
         else if (WindowControl::size_ == 2 && glfwGetKey(WindowControl::g_windows_[1]->get_window(), GLFW_KEY_1) == GLFW_PRESS)
         {
-            WindowControl::rendering_lock();
-
-            glDrawBuffer(GL_BACK);
-            WindowControl::g_windows_[1]->window_clear_white();
-            rendering_1();
-            WindowControl::g_windows_[1]->window_capture("sdf");
-
-            WindowControl::rendering_unlock();
+            glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
+            glReadBuffer(GL_FRONT);
+            WindowControl::g_windows_[1]->window_to_file("screenshot1.png");
+            glReadBuffer(GL_BACK);
+        }
+        else if (WindowControl::size_ == 2 && glfwGetKey(WindowControl::g_windows_[0]->get_window(), GLFW_KEY_1) == GLFW_PRESS) {
+            glfwMakeContextCurrent(WindowControl::g_windows_[0]->get_window());
+            glReadBuffer(GL_FRONT);
+            WindowControl::g_windows_[0]->window_to_file("screenshot2.png");
+            glReadBuffer(GL_BACK);
         }
     }
 
@@ -68,44 +76,100 @@ namespace nsg
     {
         if (WindowControl::size_ == 2)
         {
-            WindowControl::rendering_lock();
             glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
-            WindowControl::g_windows_[1]->window_clear_white();
+            WindowControl::g_windows_[1]->clear_window_white();
 
-            if (genetic_algo_ != nullptr)
+            if (population_ != nullptr)
             {
-                genetic_algo_->caculateFitness();
-                genetic_algo_->sortDNA();
-                WindowControl::g_windows_[1]->window_clear_white();
-                genetic_algo_->top()->drawAll();
+                caculate_fitness();
+                population_->sort_dna();
+                WindowControl::g_windows_[1]->clear_window_white();
+                population_->top()->draw_all();
 #ifdef DEBUG_MODE
-                std::cout << "top: " << genetic_algo_->top()->fitnessRef() << "\n";
-                int genetic_algo_Size = genetic_algo_->size();
-                for (int i = 0; i < genetic_algo_Size; i++)
+                std::cout << "top: " << population_->top()->fitness_ref() << "\n";
+                int population_size = population_->get_population_size();
+                for (int i = 0; i < population_size; i++)
                 {
-                    std::cout << i << " : " << genetic_algo_->getFitness(i) << "\n";
+                    std::cout << i << " : " << population_->fitness_ref(i) << "\n";
                 }
-                std::cout << "-----\n";
+                std::cout <<population_->get_current_stage()<< "-----\n";
 #endif
-                genetic_algo_->nextGeneration();
+                population_->next_stage();
             }
-            glfwSwapBuffers(WindowControl::g_windows_[1]->get_window());
-            WindowControl::rendering_unlock();
         }
     }
     void GeneticAlgorithm::rendering_0()
     {
         if (WindowControl::size_ == 2)
         {
-            WindowControl::rendering_lock();
             glfwMakeContextCurrent(WindowControl::g_windows_[0]->get_window());
 
-            WindowControl::g_windows_[0]->window_clear_white();
+            WindowControl::g_windows_[0]->clear_window_white();
             picture_->draw();
-            glfwSwapBuffers(WindowControl::g_windows_[0]->get_window());
-
-            WindowControl::rendering_unlock();
         }
     }
 
+}
+
+namespace nsg
+{
+    GLubyte **GeneticAlgorithm::get_dna_byte(DNA *dna)
+    {
+        glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
+        glDrawBuffer(GL_BACK);
+        WindowControl::g_windows_[1]->clear_window_white();
+        dna->draw_all();
+        GLubyte **ret = WindowControl::g_windows_[1]->get_window_halfpixel();
+        return ret;
+    }
+    void GeneticAlgorithm::set_picture_to_data(SquareObject *picture)
+    {
+        GLFWwindow *tmpWindow = glfwGetCurrentContext();
+
+        glfwMakeContextCurrent(WindowControl::g_windows_[0]->get_window());
+        glDrawBuffer(GL_BACK);
+        WindowControl::g_windows_[0]->clear_window_white();
+        picture->draw();
+        grayscale_picture_ = WindowControl::g_windows_[1]->get_window_halfpixel();
+#ifdef DEBUG_MODE
+        WindowControl::g_windows_[1]->byte_to_file(grayscale_picture_, "gray.png");
+#endif
+        glfwMakeContextCurrent(tmpWindow);
+    }
+    void GeneticAlgorithm::caculate_fitness()
+    {
+        for (int i = 0; i < population_size_; i++)
+        {
+            population_->fitness_ref(i) = fitnessFunction(
+                grayscale_picture_,
+                get_dna_byte(population_->get_dna(i)),
+                WindowControl::g_width_,
+                WindowControl::g_height_);
+        }
+    }
+}
+/*
+    using cosine similarity:  https://en.wikipedia.org/wiki/Cosine_similarity
+*/
+double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
+{
+    double ret = 0.0;
+    double dot = 0.0, denomA = 0.0, denomB = 0.0;
+    for (int s = 0; s < 1; s++)
+    {
+        for (int i = 0; i < height / 2; i++)
+        {
+            for (int j = 0; j < width * 3; j += 3)
+            {
+                int k = i * width * 3 + j;
+                dot += a[s][k] * b[s][k];
+                denomA += a[s][k] * a[s][k];
+                denomB += b[s][k] * b[s][k];
+            }
+        }
+        ret = (dot / (sqrt(denomA) * sqrt(denomB)));
+        denomA = dot = denomB = 0.0;
+    }
+    delete[] b;
+    return ret;
 }

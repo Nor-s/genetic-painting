@@ -10,7 +10,7 @@ uniform float bright;
 void main() 
 {
    vec4 tmpColor = texture(texture0, texCoord);
-   if(tmpColor.a < 0.05)
+   if(tmpColor.a < 0.1)
         discard;   
-   FragColor = vec4(tmpColor.rgb * bright, 0.9);
+   FragColor = vec4(tmpColor.rgb * bright, 1.0);
 }
