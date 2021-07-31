@@ -22,9 +22,15 @@ namespace nsg {
         int width_;
         int height_;
         std::string title_;
-
+        int padding_;
+        int file_size_;
         unsigned int pbo_[3];
+//int strideSize = (w * (4 - bytesPerPixel)) % 4;
+//int bytesPerLine = w * 3 + strideSize;
+//int size = bytesPerLine * h;
     public:        
+        static int byte_per_pixel_;
+        static int stride_size_;
         static GLubyte** grayscale_picture_;
         static int g_width_;
         static int g_height_;
@@ -44,8 +50,10 @@ namespace nsg {
         void window_to_file(const char* filename);
         void byte_to_file(GLubyte** pboMem, const char* filename);
         void set_buffersize_pbo();
+        void set_screenshot_size();
 
         void resize_window(int width, int height);
+        void read_pixels(int x, int y, int width, int height);
     };
 
 }

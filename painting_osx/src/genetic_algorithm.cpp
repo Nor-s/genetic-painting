@@ -159,7 +159,7 @@ double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
     {
         for (int i = 0; i < height / 2; i++)
         {
-            for (int j = 0; j < width * 3; j += 3)
+            for (int j = 0; j < width * 3 ; j += 3)
             {
                 int k = i * width * 3 + j;
                 dot += a[s][k] * b[s][k];
@@ -167,9 +167,8 @@ double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
                 denomB += b[s][k] * b[s][k];
             }
         }
-        ret = (dot / (sqrt(denomA) * sqrt(denomB)));
-        denomA = dot = denomB = 0.0;
     }
+        ret = (dot / (sqrt(denomA) * sqrt(denomB)));
     delete[] b;
     return ret;
 }
