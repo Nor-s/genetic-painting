@@ -2,145 +2,94 @@
 
 namespace nsg
 {
-    GA::GA(int popSize, int dnaSize, int maxGen, float x, float y, float width, int height, float Sx, float Sy)
+    Population::Population(int populaiton_size, int dna_len, int max_stage, float x, float y, float width, int height, std::pair<float, float> current_brush_width)
     {
-        populationSize = popSize;
-        dnaLen = dnaSize;
-        currentGeneration = 0;
-        maxGeneration = maxGen;
-        originImageHeight = height;
-        originImageWidth = width;
-        initPopulation(x, y, width, height, Sx, Sy);
+        current_brush_width_ = current_brush_width;
+        dna_len_ = dna_len;
+        population_size_ = populaiton_size;
+        max_stage_ = max_stage;
+        current_stage_ = 0;
+        width_ = width;
+        height_ = height;
+       
+        init_population();
     }
-    void GA::initPopulation(float x, float y, float width, int height, float Sx, float Sy)
+    void Population::init_population()
     {
-        for (int i = 0; i < populationSize; i++)
+        for (int i = 0; i < population_size_; i++)
         {
-            population.push_back(
+            population_.push_back(
                 new DNA(
-                    dnaLen,
-                    x, y,
-                    width, height,
-                    Sx, Sy));
+                    dna_len_,
+                    0.0, 0.0,
+                    width_, height_,
+                    current_brush_width_)
+            );
         }
     }
-    void GA::pushBack(DNA *a)
+    void Population::push_back(DNA *a)
     {
-        population.push_back(a);
-        populationSize++;
+        population_.push_back(a);
+        population_size_++;
     }
-    void GA::popBack()
+    void Population::pop_back()
     {
-        if (population.size() == 0)
+        if (population_.size() == 0)
         {
             return;
         }
-        DNA *tmp = population.back();
-        population.pop_back();
+        DNA *tmp = population_.back();
+        population_.pop_back();
         delete tmp;
-        populationSize--;
+        population_size_--;
     }
-    void GA::drawDNA(int idx)
+    void Population::draw_dna(int idx)
     {
-        population[idx]->drawAll();
+        population_[idx]->draw_all();
     }
-    DNA *GA::top()
+    DNA *Population::top()
     {
-        return population[0];
-    }
-
-    int GA::size()
-    {
-        return populationSize;
-    }
-    double GA::getFitness(int idx)
-    {
-        return population[idx]->fitnessRef();
+        return population_[0];
     }
 
-    void GA::sortDNA()
+    int Population::get_population_size()
     {
-        std::sort(population.begin(), population.end(), comp);
+        return population_size_;
     }
-    void GA::setCurrentPicture()
-    {
+    DNA* Population::get_dna(int idx) {
+        return population_[idx];
     }
-    void GA::nextGeneration()
+    double& Population::fitness_ref(int idx)
     {
-        int size = populationSize;
+        return population_[idx]->fitness_ref();
+    }
+
+    void Population::sort_dna()
+    {
+        std::sort(
+            population_.begin(),
+            population_.end(),
+            [](DNA* a, DNA* b)-> bool {
+                return a->fitness_ref() > b->fitness_ref();
+            }
+        );
+    }
+    void Population::next_stage()
+    {
+        int size = population_size_;
         for (int i = 0; i < size / 2; i++)
         {
-            popBack();
+            pop_back();
         }
         for (int i = 0; i < size / 2; i++)
         {
             int parent1 = rand() % 3;
             int parent2 = rand() % 3;
-            pushBack(population[parent1]->crossover(*population[parent2]));
+            push_back(population_[parent1]->crossover(*population_[parent2]));
             if (rand() % 10 == 0)
             {
-                population.back()->mutate();
+                population_.back()->mutate();
             }
-        }
-    }
-}
-bool comp(nsg::DNA *a, nsg::DNA *b)
-{
-    return a->fitnessRef() > b->fitnessRef();
-}
-/*
-    using cosine similarity:  https://en.wikipedia.org/wiki/Cosine_similarity
-*/
-double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
-{
-    double ret = 0.0;
-    double dot = 0.0, denomA = 0.0, denomB = 0.0;
-    for (int s = 0; s < 1; s++)
-    {
-        for (int i = 0; i < height / 2; i++)
-        {
-            for (int j = 0; j < width * 3; j += 3)
-            {
-                int k = i * width * 3 + j;
-                dot += a[s][k] * b[s][k];
-                denomA += a[s][k] * a[s][k];
-                denomB += b[s][k] * b[s][k];
-            }
-        }
-        ret = (dot / (sqrt(denomA) * sqrt(denomB)));
-        denomA = dot = denomB = 0.0;
-    }
-    delete[] b;
-    return ret;
-}
-
-namespace nsg
-{
-    void GA::set_picture_to_data(SquareObject *picture)
-    {
-        WindowControl::rendering_lock();
-        GLFWwindow *tmpWindow = glfwGetCurrentContext();
-
-        glfwMakeContextCurrent(WindowControl::g_windows_[0]->get_window());
-        glDrawBuffer(GL_BACK);
-        WindowControl::g_windows_[0]->window_clear_white();
-        picture->draw();
-        GLubyte **ret = WindowControl::g_windows_[1]->get_window_pixel();
-        WindowControl::g_windows_[1]->screenshot(ret);
-
-        glfwMakeContextCurrent(tmpWindow);
-        WindowControl::rendering_unlock();
-        grayscaledOriginPicture = ret;
-    }
-    void GA::caculateFitness()
-    {
-        for (int i = 0; i < populationSize; i++)
-        {
-            population[i]->fitnessRef() = fitnessFunction(
-                grayscaledOriginPicture,
-                population[i]->getPicture(),
-                originImageWidth,
-                originImageHeight);
         }
     }
 }

@@ -6,7 +6,6 @@ namespace nsg {
     Brush::Brush() {}
     void Brush::init_brushes() {
         if(Brush::brushes_size_ == 0) {
-            std::cout<<"init\n";
             for(int i = 0; i < 4; i++) {
                 Brush::brushes_.push_back(new SquareObject(i));
                 Brush::brushes_size_++;

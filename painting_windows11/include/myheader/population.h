@@ -4,38 +4,29 @@
 #include "myheader/dna.h"
 
 namespace nsg {
-    class GA {
+    class Population {
     private:
-        std::vector<DNA*> population;
-        GLubyte** grayscaledOriginPicture;
-        GLubyte** currentPicture;
-
-        int dnaLen;
-        int populationSize;
-        int maxGeneration;
-        int currentGeneration;
-        int originImageWidth, originImageHeight;
+        std::vector<DNA*> population_;
+        std::pair<float, float> current_brush_width_;
+        int dna_len_;
+        int population_size_;
+        int max_stage_;
+        int current_stage_;
+        int width_;
+        int height_;
     public:
-        GA(int popSize, int dnaSize, int maxGen, float x, float y, float width, int height, float Sx, float Sy);
-        ~GA();
-        void crossOver();
-        void initPopulation(float x, float y, float width, int height, float Sx, float Sy);
-        void pushBack(DNA* a);
-        void popBack();
+        Population(int populaiton_size, int dna_len, int max_stage, float x, float y, float width, int height, std::pair<float, float> current_brush_width);
+        ~Population();
+        double& fitness_ref(int idx);
+        void init_population();
+        void push_back(DNA* dna);
+        void pop_back();
+        void next_stage();
+        void sort_dna();
+        void draw_dna(int idx);
+        int get_population_size();
+        DNA* get_dna(int idx);
         DNA* top();
-        void drawDNA(int idx);
-        void sortDNA();
-        int size();
-        double getFitness(int idx);
-        void nextGeneration();
-        void setCurrentPicture();
-
-        void set_picture_to_data(SquareObject* picture);
-        void caculateFitness();
-
     };
 }
-bool comp(nsg::DNA* a, nsg::DNA* b);
-double fitnessFunction(GLubyte** a, GLubyte** b, int width, int height);
-
 #endif

@@ -4,35 +4,32 @@ namespace nsg
 {
     DNA::DNA(DNA &a, DNA &b)
     {
-        dnaSize = a.dnaSize;
+        dna_len_ = a.dna_len_;
         x_ = a.x_;
         y_ = a.y_;
-        sx_ = a.sx_;
         width_ = a.width_;
         height_ = a.height_;
-        sxx_ = a.sxx_;
-        int pivot = rand() % (dnaSize - 2) + 1;
+        brush_width_ = a.brush_width_;
+        int pivot = rand() % (dna_len_ - 2) + 1;
         for (int i = 0; i < pivot; i++)
         {
             dna.push_back(a.dna[i]);
         }
-        for (int i = pivot; i < dnaSize; i++)
+        for (int i = pivot; i < dna_len_; i++)
         {
             dna.push_back(b.dna[i]);
         }
-        fitness = 0;
+        fitness_ = 0;
     }
 
-    DNA::DNA(int n, float x, float y, float width, int height, float Sx, float Sy)
+    DNA::DNA(int n, float x, float y, float width, float height, std::pair<float, float> brush_width)
     {
-        
+        dna_len_ = n;
         x_ = x;
         y_ = y;
         width_ = width;
         height_ = height;
-        sx_ = Sx;
-        sxx_ = Sy;
-        dnaSize = n;
+        brush_width_ = brush_width;
         initDNA();
     }
     DNA::~DNA()
@@ -40,7 +37,7 @@ namespace nsg
     }
     void DNA::initDNA()
     {
-        for (int i = 0; i < dnaSize; i++)
+        for (int i = 0; i < dna_len_; i++)
         {
             dna.push_back(Brush());
             set_rotate(dna.back());
@@ -53,7 +50,7 @@ namespace nsg
 
     bool DNA::operator<(DNA &a)
     {
-        return fitness < a.fitness;
+        return fitness_ < a.fitness_;
     }
     void DNA::set_rotate(Brush &brush)
     {
@@ -70,8 +67,8 @@ namespace nsg
     void DNA::set_scale(Brush &brush)
     {
         float sxyz[3] = {
-            getRandFloat(sx_, sxx_), 
-            getRandFloat(sx_, sxx_),
+            getRandFloat(brush_width_.first, brush_width_.second), 
+            getRandFloat(brush_width_.first, brush_width_.second),
             1.0f
         };
         brush.set_scale(sxyz);
@@ -87,7 +84,7 @@ namespace nsg
     }
     void DNA::mutate()
     {
-        for (int i = 0; i < dnaSize; i++)
+        for (int i = 0; i < dna_len_; i++)
         {
             if (rand() % 10 == 0)
             {
@@ -122,9 +119,9 @@ namespace nsg
     {
         dna[i].draw();
     }
-    void DNA::drawAll()
+    void DNA::draw_all()
     {
-        for (int i = 0; i < dnaSize; i++)
+        for (int i = 0; i < dna_len_; i++)
         {
             this->draw(i);
         }
@@ -132,30 +129,18 @@ namespace nsg
 
     int DNA::size()
     {
-        return dnaSize;
+        return dna_len_;
     }
 
-    double &DNA::fitnessRef()
+    double &DNA::fitness_ref()
     {
-        return fitness;
+        return fitness_;
     }
 
 }
 namespace nsg {
-    GLubyte **DNA::getPicture()
-    {
-        WindowControl::rendering_lock();
-        glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
-        glDrawBuffer(GL_BACK);
-        WindowControl::g_windows_[1]->window_clear_white();
-        //drawing back()
-        drawAll();
-        GLubyte **ret = WindowControl::g_windows_[1]->get_window_pixel();
-        WindowControl::rendering_unlock();
-        return ret;
-    }
     float getRandFloat(float lo, float hi)
-{
-    return lo + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (hi - lo)));
-}
+    {
+        return lo + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (hi - lo)));
+    }
 }

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include "myheader/window_control.h"
 #include "myheader/brush.h"
 /*
             crossover     : child just point their chromosome, one crossover
@@ -21,38 +20,30 @@ namespace nsg {
     class DNA {        
     private:    
         std::vector<Brush> dna;
-        double fitness;
-        int dnaSize;
+        double fitness_;
+        std::pair<float, float> brush_width_;
+        int dna_len_;
         float x_;
         float y_;
         float width_;
         float height_;
-        float sx_;
-        float sxx_;
     public:  
-
         DNA(DNA& a, DNA& b);
-        DNA(int n, float x, float y, float width, int height, float Sx, float Sy);
+        DNA(int n, float x, float y, float width, float height, std::pair<float, float> brush_width_);
         ~DNA();
-
         bool operator <(DNA& a);
-
+        double& fitness_ref();
         void initDNA();
-
         void mutate();
         DNA* crossover(DNA& a);
         void draw(int i);    
-        void drawAll();
-        int size();
-        double& fitnessRef();
-
+        void draw_all();
         void set_translate(Brush& brush);
         void set_scale(Brush& brush);
         void set_rotate(Brush& brush);
         void set_brightness(Brush& brush);
         void set_brushidx(Brush& brush);
-
-        GLubyte** getPicture();
+        int size();
     };
     float getRandFloat(float lo, float hi);
 }
