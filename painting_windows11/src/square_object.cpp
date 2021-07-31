@@ -6,11 +6,17 @@ namespace nsg
 {
     SquareObject::SquareObject(int idx)
     {
-        init_square_object(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+        init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+        set_vertices(tex_width_/2, tex_height_);
+        init_buffer_objects();
+        init_shader(vs_shader_, fs_shader_);
     }
     SquareObject::SquareObject(const char *filePath)
     {
-        init_square_object(filePath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        init_texture(filePath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        set_vertices(tex_width_, tex_height_);
+        init_buffer_objects();
+        init_shader(vs_grayscale_shader_, fs_grayscale_shader_);
     }
     SquareObject::~SquareObject()
     {
@@ -23,23 +29,18 @@ namespace nsg
         glDeleteBuffers(1, &ebo_);
         delete shader_;
     }
-    void SquareObject::init_square_object(const char* tex,  GLint inter_format, GLenum origin_format, GLenum origin_type) {
-        stbi_set_flip_vertically_on_load(true);
-        texture_id_ = init_texture(tex, inter_format, origin_format, origin_type);
-        set_vertices(tex_width_, tex_height_);
-        init_buffer_objects();
-        shader_ = new Shader(vs_shader_, fs_shader_);
+    void SquareObject::init_shader(const char* vertex, const char* frag) {
+        shader_ = new Shader(vertex, frag);
         init_texture_unit();
         init_model();
-        translate(0.0f, 0.0f, 0.0f);
         set_model_to_uniform();
         set_bright_to_uniform(1.0f);
     }
-    unsigned int SquareObject::init_texture(const char *fileName, GLint inter_format, GLenum origin_format, GLenum origin_type)
+    void SquareObject::init_texture(const char *fileName, GLint inter_format, GLenum origin_format, GLenum origin_type)
     {
-        unsigned int ID;
-        glGenTextures(1, &ID);
-        glBindTexture(GL_TEXTURE_2D, ID);
+        stbi_set_flip_vertically_on_load(true);
+        glGenTextures(1, &texture_id_);
+        glBindTexture(GL_TEXTURE_2D, texture_id_);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -62,7 +63,6 @@ namespace nsg
         tex_width_ *= 0.7, tex_height_ *= 0.7;
 #endif
         stbi_image_free(data);
-        return ID;
     }
     void SquareObject::init_buffer_objects()
     {
@@ -148,6 +148,10 @@ namespace nsg
     void SquareObject::scale(float s)
     {
         model_transform_ = glm::scale(model_transform_, glm::vec3(s, s, s));
+    }
+    void SquareObject::scale(float s[3])
+    {
+        model_transform_ = glm::scale(model_transform_, glm::vec3(s[0], s[1], s[2]));
     }
     void SquareObject::scale(float sx, float sy, float sz)
     {

@@ -29,9 +29,9 @@ namespace nsg {
         };
         const char* tex_[4] = {
             "../resources/1.png",
-            "../resources/2.png",
-            "../resources/3.png",
             "../resources/4.png",
+            "../resources/6.png",
+            "../resources/9.png",
         };
         const char* vs_shader_ = "../shaders/vs_brush.vs";
         const char* fs_shader_ = "../shaders/fs_brush.fs";
@@ -49,9 +49,9 @@ namespace nsg {
         SquareObject(int idx);
         SquareObject(const char* filepath);
         ~SquareObject();
-        unsigned int init_texture(const char* filepath, GLint inter_format, GLenum origin_format, GLenum origin_type);
-        void init_square_object(const char* tex, GLint inter_format, GLenum origin_format, GLenum origin_type);
+        void init_texture(const char* filepath, GLint inter_format, GLenum origin_format, GLenum origin_type);
         void init_buffer_objects();
+        void init_shader(const char* vertex, const char* frag);
         void init_texture_unit();
         void init_model();
         void set_vertices (int width, int height);
@@ -63,6 +63,7 @@ namespace nsg {
         void translate(float t[3]);
         void translate(float tx, float ty, float tz);
         void rotate(float degree);
+        void scale(float s[3]);
         void scale(float s);
         void scale(float sx, float sy, float sz);
         void draw();

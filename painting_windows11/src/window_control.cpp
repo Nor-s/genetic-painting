@@ -46,6 +46,9 @@ namespace nsg
             std::cout << "Failed to initialize GLAD" << std::endl;
             return nullptr;
         }
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         return window;
     }

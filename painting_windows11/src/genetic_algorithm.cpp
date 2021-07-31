@@ -36,11 +36,12 @@ namespace nsg
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
         if (genetic_algo_ == nullptr)
         {
+            Brush::init_brushes();
             genetic_algo_ = new GA(
                 population_size_, dna_len_, max_stage_,
                 0.0f, 0.0f,
                 WindowControl::g_width_, WindowControl::g_height_,
-                0.05f, 0.2f);
+                0.2f, 0.4f);
             genetic_algo_->set_picture_to_data(picture_);
         }
     }

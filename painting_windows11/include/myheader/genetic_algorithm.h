@@ -2,7 +2,7 @@
 #define GENETIC_ALGORITHM_H
 
 
-#include "myheader/myGA.h"
+#include "myheader/population.h"
 #include "myheader/window_control.h"
 #include "myheader/square_object.h"
 
