@@ -1,40 +1,62 @@
 #include "myheader/brush.h"
 
 namespace nsg {
-    std::vector<SquareObject*> Brush::brushes_;
-    int Brush::brushes_size_ = 0;
-    Brush::Brush() {}
-    void Brush::init_brushes() {
-        if(Brush::brushes_size_ == 0) {
-            for(int i = 0; i < 4; i++) {
-                Brush::brushes_.push_back(new SquareObject(i));
-                Brush::brushes_size_++;
-            }  
+    Brush::Brush(int idx) {
+        init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+        set_vertices();
+        init_buffer_objects();
+        init_shader();
+    }
+}
+
+namespace nsg
+{
+    std::vector<Brush *> Palette::brushes_;
+    int Palette::brushes_size_ = 0;
+    Palette::Palette() {}
+    void Palette::init_brushes()
+    {
+        if (Palette::brushes_size_ == 0)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                Palette::brushes_.push_back(new Brush(i));
+                Palette::brushes_size_++;
+            }
         }
     }
-    int Brush::get_brushes_size() {
+    int Palette::get_brushes_size()
+    {
         return brushes_size_;
     }
-    void Brush::set_translate(float translate[3]) {
-        for(int i = 0; i < 3; i++) {
+    void Palette::set_translate(float translate[3])
+    {
+        for (int i = 0; i < 3; i++)
+        {
             translate_[i] = translate[i];
         }
     }
-    void Brush::set_scale(float scale[3]) {
-        for(int i = 0; i < 3; i++) {
+    void Palette::set_scale(float scale[3])
+    {
+        for (int i = 0; i < 3; i++)
+        {
             scale_[i] = scale[i];
         }
     }
-    void Brush::set_rotate(float rotate) {
+    void Palette::set_rotate(float rotate)
+    {
         rotate_ = rotate;
     }
-    void Brush::set_brightness(float brightness) {
+    void Palette::set_brightness(float brightness)
+    {
         brightness_ = brightness;
     }
-    void Brush::set_brushidx(int idx) {
+    void Palette::set_brushidx(int idx)
+    {
         idx_ = idx;
     }
-    void Brush::draw() {
+    void Palette::draw()
+    {
         SquareObject *p = brushes_[idx_];
         p->init_model();
         p->translate(translate_);

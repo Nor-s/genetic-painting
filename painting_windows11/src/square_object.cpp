@@ -4,19 +4,12 @@ glm::mat4 Shader::projection_matrix;
 
 namespace nsg
 {
-    SquareObject::SquareObject(int idx)
+    SquareObject::SquareObject() {}
+    SquareObject::SquareObject(const char *filepath)
     {
-        init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
-        set_vertices(tex_width_/2, tex_height_);
-        init_buffer_objects();
-        init_shader(vs_shader_, fs_shader_);
-    }
-    SquareObject::SquareObject(const char *filePath)
-    {
-        init_texture(filePath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        init_texture(filepath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
         set_vertices(tex_width_, tex_height_);
         init_buffer_objects();
-        init_shader(vs_grayscale_shader_, fs_grayscale_shader_);
     }
     SquareObject::~SquareObject()
     {
@@ -29,12 +22,27 @@ namespace nsg
         glDeleteBuffers(1, &ebo_);
         delete shader_;
     }
-    void SquareObject::init_shader(const char* vertex, const char* frag) {
+    void SquareObject::init_shader() {
+        init_shader(vs_base_, fs_base_);
+    }
+    void SquareObject::init_shader(const char *vertex, const char *frag)
+    {
         shader_ = new Shader(vertex, frag);
         init_texture_unit();
         init_model();
         set_model_to_uniform();
         set_bright_to_uniform(1.0f);
+    }
+    void SquareObject::init_texture(GLvoid* image_data, int width, int height, GLenum pixel_format) {
+            // init texture objects
+            glGenTextures(1, &texture_id_);
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, image_data);
+            glBindTexture(GL_TEXTURE_2D, 0);
     }
     void SquareObject::init_texture(const char *fileName, GLint inter_format, GLenum origin_format, GLenum origin_type)
     {
@@ -60,7 +68,7 @@ namespace nsg
             std::cout << "Failed to load texture" << std::endl;
         }
 #ifdef __APPLE__
-        tex_width_ *= 0.7, tex_height_ *= 0.7;
+    tex_width_/=2;tex_height_ /=2;
 #endif
         stbi_image_free(data);
     }
@@ -110,12 +118,19 @@ namespace nsg
     {
         model_transform_ = glm::mat4(1.0f);
     }
+    void SquareObject::set_vertices()
+    {
+        vertices_[0] = vertices_[5] = (float)tex_width_ / 2.0f;
+        vertices_[10] = vertices_[15] = -(float)tex_width_ / 2.0f;
+        vertices_[1] = vertices_[16] = (float)tex_height_ / 2.0f;
+        vertices_[6] = vertices_[11] = -(float)tex_height_ / 2.0f;
+    }
     void SquareObject::set_vertices(int width, int height)
     {
-            vertices_[0] = vertices_[5] = (float)width / 2.0f;
-            vertices_[10] = vertices_[15] = -(float)width / 2.0f;
-            vertices_[1] = vertices_[16] = (float)height / 2.0f;
-            vertices_[6] = vertices_[11] = -(float)height / 2.0f;
+        vertices_[0] = vertices_[5] = (float)width / 2.0f;
+        vertices_[10] = vertices_[15] = -(float)width / 2.0f;
+        vertices_[1] = vertices_[16] = (float)height / 2.0f;
+        vertices_[6] = vertices_[11] = -(float)height / 2.0f;
     }
     void SquareObject::set_model_to_uniform()
     {
@@ -127,10 +142,12 @@ namespace nsg
         shader_->use();
         shader_->setFloat("bright", bright);
     }
-    int SquareObject::get_tex_width() { 
+    int SquareObject::get_tex_width()
+    {
         return tex_width_;
     }
-    int SquareObject::get_tex_height() {
+    int SquareObject::get_tex_height()
+    {
         return tex_height_;
     }
     void SquareObject::translate(float t[3])
@@ -139,7 +156,7 @@ namespace nsg
     }
     void SquareObject::translate(float tx, float ty, float tz)
     {
-        model_transform_= glm::translate(model_transform_, glm::vec3(tx, ty, tz));
+        model_transform_ = glm::translate(model_transform_, glm::vec3(tx, ty, tz));
     }
     void SquareObject::rotate(float degree)
     {
@@ -158,4 +175,3 @@ namespace nsg
         model_transform_ = glm::scale(model_transform_, glm::vec3(sx, sy, sz));
     }
 }
-        

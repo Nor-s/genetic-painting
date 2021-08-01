@@ -2,17 +2,25 @@
 
 namespace nsg
 {
-    void render_callback() {
-       if(GeneticAlgorithm::manager_ != nullptr) {
+    void render_callback()
+    {
+        /*
+        if (WindowControl::size_ == 2)
+        {
             GeneticAlgorithm::manager_->rendering_0();
+            glfwSwapBuffers(WindowControl::g_windows_[0]->get_window());
             GeneticAlgorithm::manager_->rendering_1();
+            glfwSwapBuffers(WindowControl::g_windows_[1]->get_window());
         }
+    */
     }
-    void init_callback(GLFWwindow *window)
+    void init_callback(GLFWwindow *window, bool is_drop)
     {
         //callback
-        glfwSetDropCallback(window, drop_callback);
-        glfwSetFramebufferSizeCallback(window, resize_callback);
+        if (is_drop)
+        {
+            glfwSetDropCallback(window, drop_callback);
+        }
         glfwSetWindowPosCallback(window, pos_callback);
     }
     void pos_callback(GLFWwindow *window, int x, int y)
@@ -26,7 +34,8 @@ namespace nsg
         }
         render_callback();
     }
-    void resize_callback(GLFWwindow *windowPointer, int width, int height)
+
+    void resize_callback(GLFWwindow *window, int width, int height)
     {
         glViewport(0, 0, width, height);
         float widthFactor = static_cast<float>(width) / static_cast<float>(WindowControl::g_width_);
@@ -35,8 +44,6 @@ namespace nsg
             -(float)WindowControl::g_width_ / 2.0f * widthFactor, (float)WindowControl::g_width_ / 2.0f * widthFactor,
             -(float)WindowControl::g_height_ / 2.0f * heightFactor, (float)WindowControl::g_height_ / 2.0f * heightFactor,
             0.0f, 100.0f);
-
-        render_callback();
     }
     void drop_callback(GLFWwindow *window, int count, const char **paths)
     {
@@ -44,28 +51,29 @@ namespace nsg
         {
             return;
         }
-        int i;
-        for (i = 0; i < 1; i++)
+        for (int i = 0; i < 1; i++)
         {
-            WindowControl::rendering_lock();
 #ifdef DEBUG_MODE
             std::cout << paths[i] << "\n";
 #endif
-            GeneticAlgorithm::picture_ = new SquareObject(paths[i]);
+            GeneticAlgorithm::picture_ = new Picture(paths[i]);
             int posx, posy;
             int width = GeneticAlgorithm::picture_->get_tex_width(), height = GeneticAlgorithm::picture_->get_tex_height();
 
-            glfwSetWindowSize(WindowControl::g_windows_[0]->get_window(), width, height);
-            glfwGetWindowPos(WindowControl::g_windows_[0]->get_window(), &posx, &posy);
+            std::vector<WindowControl *> *window_p = &WindowControl::g_windows_;
 
-            WindowControl::g_windows_.push_back(new WindowControl(width, height, "painting"));
-            glfwSetWindowPos(WindowControl::g_windows_[1]->get_window(), posx + width, posy);
-            init_callback(WindowControl::g_windows_[1]->get_window());
+            (*window_p)[0]->resize_window(width, height);
+            glfwGetWindowPos((*window_p)[0]->get_window(), &posx, &posy);
+            Shader::projection_matrix = glm::ortho(
+                -(float)WindowControl::g_width_ / 2.0f, (float)WindowControl::g_width_ / 2.0f,
+                -(float)WindowControl::g_height_ / 2.0f, (float)WindowControl::g_height_ / 2.0f,
+                0.0f, 100.0f);
 
-            glEnable(GL_DEPTH_TEST);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            WindowControl::rendering_unlock();
+            (*window_p).push_back(new WindowControl(width, height, "painting"));
+            glfwSetWindowPos((*window_p)[1]->get_window(), posx + width, posy);
+            init_callback((*window_p)[1]->get_window(), false);
+
+            render_callback();
         }
     }
 }

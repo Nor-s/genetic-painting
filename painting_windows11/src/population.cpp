@@ -11,26 +11,25 @@ namespace nsg
         current_stage_ = 0;
         width_ = width;
         height_ = height;
-       
+
         init_population();
     }
     void Population::init_population()
     {
-        for (int i = 0; i < population_size_; i++)
+        int size = population_size_*2;
+        for (int i = 0; i < size; i++)
         {
             population_.push_back(
                 new DNA(
                     dna_len_,
                     0.0, 0.0,
                     width_, height_,
-                    current_brush_width_)
-            );
+                    current_brush_width_));
         }
     }
     void Population::push_back(DNA *a)
     {
         population_.push_back(a);
-        population_size_++;
     }
     void Population::pop_back()
     {
@@ -41,7 +40,6 @@ namespace nsg
         DNA *tmp = population_.back();
         population_.pop_back();
         delete tmp;
-        population_size_--;
     }
     void Population::draw_dna(int idx)
     {
@@ -54,12 +52,13 @@ namespace nsg
 
     int Population::get_population_size()
     {
-        return population_size_;
+        return population_.size();
     }
-    DNA* Population::get_dna(int idx) {
+    DNA *Population::get_dna(int idx)
+    {
         return population_[idx];
     }
-    double& Population::fitness_ref(int idx)
+    double &Population::fitness_ref(int idx)
     {
         return population_[idx]->fitness_ref();
     }
@@ -69,27 +68,45 @@ namespace nsg
         std::sort(
             population_.begin(),
             population_.end(),
-            [](DNA* a, DNA* b)-> bool {
+            [](DNA *a, DNA *b) -> bool
+            {
                 return a->fitness_ref() > b->fitness_ref();
-            }
-        );
+            });
+    }
+    void Population::swap(int idx, DNA* a) {
+        DNA* tmp = population_[idx];
+        population_[idx] = a;
+        delete tmp;
     }
     void Population::next_stage()
     {
         int size = population_size_;
+
+        current_stage_++;
+        if(current_brush_width_.first > 0.01) {
+                current_brush_width_.first -= 0.00002f;
+                current_brush_width_.second -= 0.00002f;
+        }
+    
         for (int i = 0; i < size / 2; i++)
         {
             pop_back();
         }
         for (int i = 0; i < size / 2; i++)
         {
-            int parent1 = rand() % 3;
-            int parent2 = rand() % 3;
-            push_back(population_[parent1]->crossover(*population_[parent2]));
-            if (rand() % 10 == 0)
+            int parent1 = rand() % 5;
+            int parent2 = rand() % 5;
+            while (parent1 == parent2)
             {
-                population_.back()->mutate();
+                parent1 = rand() % 5;
+                parent2 = rand() % 5;
             }
+            push_back(population_[parent1]->crossover(*population_[parent2],current_brush_width_));
+            population_.back()->mutate();
         }
+    }
+    int Population::get_current_stage()
+    {
+        return current_stage_;
     }
 }

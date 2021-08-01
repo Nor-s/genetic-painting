@@ -1,4 +1,5 @@
 #include "myheader/window_control.h"
+#define DEBUG_MODE
 
 namespace nsg
 {
@@ -7,16 +8,23 @@ namespace nsg
     bool WindowControl::rendering_semaphore_ = true;
     int WindowControl::g_height_ = 800;
     int WindowControl::g_width_ = 800;
+    int WindowControl::byte_per_pixel_ = 3;
+    int WindowControl::stride_size_ = 3;
 
     WindowControl::WindowControl(int width, int height, const char *title)
     {
         stbi_flip_vertically_on_write(true);
         title_ = std::string(title);
-        width_ = g_width_ = width;
-        height_ = g_height_ = height;
+        set_width(width);
+        set_height(height);
         window_ = init_window();
+        set_screenshot_size();
         init_pbo();
         size_++;
+    }
+    WindowControl::~WindowControl()
+    {
+        glDeleteBuffers(3, pbo_);
     }
     GLFWwindow *WindowControl::init_window()
     {
@@ -31,7 +39,7 @@ namespace nsg
 
         // glfw window creation
         // --------------------
-        GLFWwindow *window = glfwCreateWindow(width_, height_, title_.c_str(), NULL, NULL);
+        GLFWwindow *window = glfwCreateWindow(g_width_, g_height_, title_.c_str(), NULL, NULL);
         if (window == nullptr)
         {
             std::cout << "Failed to create GLFW window" << std::endl;
@@ -46,9 +54,7 @@ namespace nsg
             std::cout << "Failed to initialize GLAD" << std::endl;
             return nullptr;
         }
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
         return window;
     }
@@ -56,117 +62,156 @@ namespace nsg
     {
         return window_;
     }
+
     void WindowControl::rendering_lock()
     {
-#ifdef SEMAPHORE_TEST
-        while (!rendering_semaphore_)
+        if (!rendering_semaphore_)
         {
+            return;
         }
-#endif
         rendering_semaphore_ = false;
     }
     void WindowControl::rendering_unlock()
     {
         rendering_semaphore_ = true;
     }
+
     void WindowControl::init_pbo()
     {
-        glfwGetWindowSize(get_window(), &width_, &height_);
-        unsigned int bufferSize = width_ * (height_ / 2) * 3;
-
         //pbo gen
-        glGenBuffers(2, pbo_);
+        glGenBuffers(3, pbo_);
+        set_buffersize_pbo();
+    }
+    void WindowControl::set_buffersize_pbo()
+    {
+        int file_size = file_size_;
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, bufferSize, nullptr, GL_STREAM_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, file_size / 2, nullptr, GL_DYNAMIC_READ);
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, bufferSize, nullptr, GL_STREAM_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, file_size / 2, nullptr, GL_DYNAMIC_READ);
 
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[2]);
+        glBufferData(GL_PIXEL_PACK_BUFFER, file_size, nullptr, GL_STREAM_READ);
         //unBind
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     }
 
-    void WindowControl::window_clear_white()
+    void WindowControl::clear_window_white()
     {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     }
+    void WindowControl::resize_window(int width, int height)
+    {
+        set_width(width);
+        set_height(height);
+        glViewport(0, 0, g_width_, g_height_);
+        glfwSetWindowSize(window_, g_width_, g_height_);
+        set_screenshot_size();
+        set_buffersize_pbo();
+    }
+    GLubyte *WindowControl::get_window_fullpixel()
+    {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[2]);
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        read_pixels(0, 0, get_relative_width(), get_relative_height());
+        GLubyte *ret = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
-    GLubyte **WindowControl::get_window_pixel()
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        return ret;
+    }
+    GLubyte **WindowControl::get_window_halfpixel()
     {
         GLubyte **pbomem = new GLubyte *[2];
-
-        init_pbo();
+        pbomem[0] = nullptr;
+        pbomem[1] = nullptr;
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
-        glReadPixels(
-            0, 0,
-            width_, height_ / 2,
-            GL_BGR,
-            GL_UNSIGNED_BYTE,
-            0);
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
+        read_pixels(0, 0, get_relative_width(), get_relative_height() / 2);
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
-        glReadPixels(
-            0, height_ / 2,
-            width_, height_ / 2,
-            GL_BGR,
-            GL_UNSIGNED_BYTE,
-            0);
+        read_pixels(0, get_relative_height() / 2, get_relative_width(), get_relative_height() / 2);
 
         // Process partial images.  Mapping the buffer waits for
         // outstanding DMA transfers into the buffer to finish.
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
         pbomem[0] = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+#ifdef DEBUG_MODE
+        if (!pbomem[0])
+        {
+            std::cout << "error : glMapBuffer - window_control.cpp - pbo_[0]\n";
+        }
+#endif
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
         pbomem[1] = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-
-        glDeleteBuffers(2, pbo_);
+#ifdef DEBUG_MODE
+        if (!pbomem[1])
+        {
+            std::cout << "error : glMapBuffer - window_control.cpp - pbo_[1]\n";
+        }
+#endif
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         return pbomem;
     }
 
-    void WindowControl::window_capture(const char *filename)
+    void WindowControl::window_to_file(const char *filename)
     {
-        int strideSize = g_width_ * 3 + g_width_ % 4;
-
-        GLubyte **pbomem = get_window_pixel();
-        GLubyte *full = new GLubyte[width_ * height_ * 3];
-        int size = strideSize * height_;
-        for (int i = 0; i < size / 2; i++)
-        {
-            full[i] = pbomem[0][i];
-            full[i + size / 2] = pbomem[1][i];
-        }
-
-        stbi_write_png("s11.png", width_, height_ / 2, 3, pbomem[0], strideSize);
-        stbi_write_png("s111.png", width_, height_ / 2, 3, pbomem[1], strideSize);
-        stbi_write_png(filename, width_, height_, 3, full, strideSize);
-
-        delete[] full;
-        delete[] pbomem;
-        //delete
+        GLubyte *full_pixel = get_window_fullpixel();
+        stbi_write_png(filename, get_relative_width(), get_relative_height(), byte_per_pixel_, full_pixel, stride_size_);
     }
 
-    void WindowControl::screenshot(GLubyte **pbomem)
+    void WindowControl::byte_to_file(GLubyte **pbomem, const char *filename)
     {
-        int stridesize = g_width_ * 3 + g_width_ % 4;
-
-        GLubyte *full = new GLubyte[width_ * height_ * 3];
-        int size = stridesize * height_;
-        for (int i = 0; i < size / 2; i++)
+        GLubyte *full = new GLubyte[file_size_];
+        for (int i = 0; i < file_size_ / 2; i++)
         {
             full[i] = pbomem[0][i];
-            full[i + size / 2] = pbomem[1][i];
+            full[i + file_size_ / 2] = pbomem[1][i];
         }
-
-        stbi_write_png("s11.png", width_, height_ / 2, 3, pbomem[0], stridesize);
-        stbi_write_png("s111.png", width_, height_ / 2, 3, pbomem[1], stridesize);
-        stbi_write_png("s1111.png", width_, height_, 3, full, stridesize);
+        stbi_write_png(filename, get_relative_width(), get_relative_height(), byte_per_pixel_, full, stride_size_);
+#ifdef DEBUG_MODE
+        stbi_write_png(std::string("1" + std::string(filename)).c_str(),  get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[0], stride_size_);
+        stbi_write_png(std::string("2" + std::string(filename)).c_str(), get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[1], stride_size_);
+#endif
+    }
+    void WindowControl::set_screenshot_size()
+    {
+        padding_ = (get_relative_width() * (4 - byte_per_pixel_)) % 4;
+        stride_size_ = get_relative_width() * byte_per_pixel_ + padding_;
+        file_size_ = stride_size_ * get_relative_height();
+    }
+    void WindowControl::read_pixels(int x, int y, int width, int height)
+    {
+        glReadPixels(
+            x, y,
+            width, height,
+            ((byte_per_pixel_ == 3) ? GL_BGR : GL_BGRA),
+            GL_UNSIGNED_BYTE,
+            0);
+    }
+    void WindowControl::set_height(int height)
+    {
+        relative_height_ = g_height_ = height;
+        relative_height_ *= 2;
+    }
+    void WindowControl::set_width(int width)
+    {
+        relative_width_ = g_width_ = width;
+        relative_width_ *= 2;
+    }
+    int WindowControl::get_relative_height()
+    {
+        return relative_height_;
+    }
+    int WindowControl::get_relative_width()
+    {
+        return relative_width_;
     }
 }

@@ -5,8 +5,20 @@
 #include "myheader/square_object.h"
 
 namespace nsg {
-    struct Brush {
-        static std::vector<SquareObject*> brushes_;
+    class Brush : public SquareObject {
+    private:
+        const char *tex_[4] = {
+            "../resources/1.png",
+            "../resources/4.png",
+            "../resources/6.png",
+            "../resources/9.png",
+        };
+    public:
+        Brush(int idx);
+        
+    };
+    struct Palette {
+        static std::vector<Brush*> brushes_;
         static int brushes_size_;
         static void init_brushes();
         static int get_brushes_size();
@@ -17,7 +29,7 @@ namespace nsg {
         float brightness_;
         int idx_;
 
-        Brush();
+        Palette();
         void set_translate(float translate[3]);
         void set_scale(float scale[3]);
         void set_rotate(float rotate);

@@ -19,7 +19,7 @@ namespace nsg {
 
     class DNA {        
     private:    
-        std::vector<Brush> dna;
+        std::vector<Palette> dna;
         double fitness_;
         std::pair<float, float> brush_width_;
         int dna_len_;
@@ -28,21 +28,21 @@ namespace nsg {
         float width_;
         float height_;
     public:  
-        DNA(DNA& a, DNA& b);
+        DNA(DNA& a, DNA& b, std::pair<float, float> & brush_width);
         DNA(int n, float x, float y, float width, float height, std::pair<float, float> brush_width_);
         ~DNA();
         bool operator <(DNA& a);
         double& fitness_ref();
         void initDNA();
         void mutate();
-        DNA* crossover(DNA& a);
+        DNA* crossover(DNA& a, std::pair<float, float>& brush_width);
         void draw(int i);    
         void draw_all();
-        void set_translate(Brush& brush);
-        void set_scale(Brush& brush);
-        void set_rotate(Brush& brush);
-        void set_brightness(Brush& brush);
-        void set_brushidx(Brush& brush);
+        void set_translate(Palette& brush);
+        void set_scale(Palette& brush);
+        void set_rotate(Palette& brush);
+        void set_brightness(Palette& brush);
+        void set_brushidx(Palette& brush);
         int size();
     };
     float getRandFloat(float lo, float hi);
