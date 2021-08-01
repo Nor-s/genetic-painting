@@ -59,7 +59,9 @@ namespace nsg
             GeneticAlgorithm::picture_ = new Picture(paths[i]);
             int posx, posy;
             int width = GeneticAlgorithm::picture_->get_tex_width(), height = GeneticAlgorithm::picture_->get_tex_height();
+
             std::vector<WindowControl *> *window_p = &WindowControl::g_windows_;
+
             (*window_p)[0]->resize_window(width, height);
             glfwGetWindowPos((*window_p)[0]->get_window(), &posx, &posy);
             Shader::projection_matrix = glm::ortho(

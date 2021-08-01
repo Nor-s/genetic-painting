@@ -68,7 +68,7 @@ namespace nsg
             std::cout << "Failed to load texture" << std::endl;
         }
 #ifdef __APPLE__
-        tex_width_ *= 0.7, tex_height_ *= 0.7;
+    tex_width_/=2;tex_height_ /=2;
 #endif
         stbi_image_free(data);
     }

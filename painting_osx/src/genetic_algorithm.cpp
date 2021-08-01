@@ -1,11 +1,17 @@
 #include "myheader/genetic_algorithm.h"
-#define DEBUG_MODE
+//#define DEBUG_MODE
 namespace nsg
 {
     GeneticAlgorithm *GeneticAlgorithm::manager_ = nullptr;
     Picture *GeneticAlgorithm::picture_ = nullptr;
     Population *GeneticAlgorithm::population_ = nullptr;
 
+    /*
+        init Algorithm
+            population size  : number of dna
+            dna len          : number of chromosome
+            max stage        : set maximum gen picture 
+    */
     GeneticAlgorithm::GeneticAlgorithm(int population_size, int dna_len, int max_stage, std::pair<float, float> brush_width)
     {
         population_size_ = population_size;
@@ -14,6 +20,11 @@ namespace nsg
         brush_width_ = brush_width;
         manager_ = this;
     }
+    /*
+        loop until drop image file
+            don't drop othre file
+            current set : RGB image file
+    */
     void GeneticAlgorithm::loop_until_drop()
     {
         //for drop image
@@ -23,6 +34,12 @@ namespace nsg
             glfwPollEvents();
         }
     }
+    /*
+        main loop 
+            process input : key 1 is screenshot each of windows
+            rendering_0   : drawing dropped image picture
+            rendering_1   : drawing current top picture
+    */
     void GeneticAlgorithm::start_main_loop()
     {
         while (!glfwWindowShouldClose(WindowControl::g_windows_[0]->get_window()))
@@ -35,6 +52,19 @@ namespace nsg
             glfwPollEvents();
         }
     }
+    /*
+        1) init current_top_painting 
+            it is first "all black" 
+            size: full window (global width x global height)
+        
+        2) init population
+            set DNA's
+            DNA = palette 
+            palette is brush attribute: decide scale, pos, angle, bright, brush type
+
+        3) init picture data
+            for caculate fitness
+    */
     void GeneticAlgorithm::init_population()
     {
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
@@ -54,7 +84,12 @@ namespace nsg
             set_picture_to_data(picture_);
         }
     }
-
+    /*
+        input
+            esc : terminate program
+            click window1 and key '1' : screenshot window 1
+            click window0 and key '1' : screenshot window 0
+    */
     void GeneticAlgorithm::process_input()
     {
         if (glfwGetKey(WindowControl::g_windows_[0]->get_window(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -76,28 +111,22 @@ namespace nsg
             glReadBuffer(GL_BACK);
         }
     }
-
+    /*
+        rendering second window
+            window[1] : drawing current top picture
+            offscreen : caculate fitness
+    */
     void GeneticAlgorithm::rendering_1()
     {
         if (WindowControl::size_ == 2)
         {
             glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
-            WindowControl::g_windows_[1]->clear_window_white();
 
             if (population_ != nullptr)
             {
-                for(int i = 0; i < max_stage_; i++) {
-                    caculate_fitness();
-                    population_->sort_dna();
-                    population_->next_stage();
-                }
-                WindowControl::g_windows_[1]->clear_window_white();
-                current_top_painting_->bind_write_pbo_pointer();
-                current_top_painting_->draw();
-                population_->top()->draw_all();
-                current_top_painting_->read_back_buffer();
-                current_top_painting_->unbind_write_pbo();
-                current_top_painting_->sub_picture();
+                for(int i = 0; i < 2; i++) {
+                caculate_fitness();
+               population_->sort_dna();
 #ifdef DEBUG_MODE
                 std::cout << "top: " << population_->top()->fitness_ref() << "\n";
                 int population_size = population_->get_population_size();
@@ -107,9 +136,24 @@ namespace nsg
                 }
                 std::cout << population_->get_current_stage() << "-----\n";
 #endif
+                population_->next_stage();
+                }
+            glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
+                WindowControl::g_windows_[1]->clear_window_white();
+                current_top_painting_->bind_write_pbo_pointer();
+                current_top_painting_->draw();
+                population_->top()->draw_all();
+                current_top_painting_->read_back_buffer();
+                current_top_painting_->unbind_write_pbo();
+                current_top_painting_->sub_picture();
+
             }
         }
     }
+    /*
+        rendering first window
+            drawing picture (dorpped image).
+    */
     void GeneticAlgorithm::rendering_0()
     {
         if (WindowControl::size_ == 2)
@@ -125,6 +169,11 @@ namespace nsg
 
 namespace nsg
 {
+    /*
+        dna + current top painting
+            to byte
+            for fitness.
+    */
     GLubyte **GeneticAlgorithm::get_dna_byte(DNA *dna)
     {
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
@@ -133,8 +182,16 @@ namespace nsg
         current_top_painting_->draw();
         dna->draw_all();
         GLubyte **ret = WindowControl::g_windows_[1]->get_window_halfpixel();
+#ifdef DEBUG_MODE
+        //WindowControl::g_windows_[1]->byte_to_file(ret, "dna.png");
+#endif
         return ret;
     }
+    /*
+        set grayscale_picture 
+            using window_control' get window halfpixel
+            for fitness.
+    */
     void GeneticAlgorithm::set_picture_to_data(SquareObject *picture)
     {
         GLFWwindow *tmpWindow = glfwGetCurrentContext();
@@ -149,6 +206,11 @@ namespace nsg
 #endif
         glfwMakeContextCurrent(tmpWindow);
     }
+    /*
+        set all DNA' fitness
+            fitness : similarity of (dna + current top painting) and (grayscale picture)  
+            for dna sort, get top.
+    */
     void GeneticAlgorithm::caculate_fitness()
     {
         for (int i = 0; i < population_size_; i++)
@@ -156,8 +218,8 @@ namespace nsg
             population_->fitness_ref(i) = fitnessFunction(
                 grayscale_picture_,
                 get_dna_byte(population_->get_dna(i)),
-                WindowControl::g_width_,
-                WindowControl::g_height_);
+                WindowControl::g_windows_[1]->get_relative_width(),
+                WindowControl::g_windows_[1]->get_relative_height());
         }
     }
 }
@@ -168,6 +230,7 @@ double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
 {
     double ret = 0.0;
     double dot = 0.0, denomA = 0.0, denomB = 0.0;
+
     for (int s = 0; s < 1; s++)
     {
         for (int i = 0; i < height / 2; i++)

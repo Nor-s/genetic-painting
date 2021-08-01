@@ -3,7 +3,7 @@
 namespace nsg {
     Brush::Brush(int idx) {
         init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
-        set_vertices();
+        set_vertices(tex_height_, tex_height_);
         init_buffer_objects();
         init_shader();
     }

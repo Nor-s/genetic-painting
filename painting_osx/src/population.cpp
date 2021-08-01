@@ -91,10 +91,7 @@ namespace nsg
                 parent2 = rand() % 5;
             }
             push_back(population_[parent1]->crossover(*population_[parent2]));
-            if (rand() % 2 == 0)
-            {
-                population_.back()->mutate();
-            }
+            population_.back()->mutate();
         }
         current_stage_++;
     }

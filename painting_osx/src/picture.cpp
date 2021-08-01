@@ -1,22 +1,25 @@
 #include "myheader/picture.h"
-//#define DEBUG_MODE
+#define DEBUG_MODE
 namespace nsg
 {
     Picture::Picture(int width, int height, int byte_per_pixel, GLenum pixel_format)
     {
-        tex_width_ = width;
-        tex_height_ = height;
+        set_width(width);
+        set_height(height);
+
         pixel_format_ = pixel_format;
         byte_per_pixel_ = byte_per_pixel;
-        image_size_ = (width * byte_per_pixel_ + width % 4) * height;
+        image_size_ = (relative_width_ * byte_per_pixel_ +  relative_width_% 4) * relative_height_;
+
         image_data_ = new GLubyte[image_size_];
         memset(image_data_, 0, image_size_);
-        SquareObject::init_texture((GLvoid *)image_data_, width, height, pixel_format);
+        SquareObject::init_texture((GLvoid *)image_data_, relative_width_, relative_height_, pixel_format);
+
         SquareObject::set_vertices();
         SquareObject::init_buffer_objects();
         init_pbo();
         SquareObject::init_shader();
-        SquareObject::translate(0.0f, 0.0f, -99.0f);
+        SquareObject::translate(0.0f, 0.0f, -50.0f);
         SquareObject::set_model_to_uniform();
     }
 
@@ -54,23 +57,14 @@ namespace nsg
     {
         glReadPixels(
             0, 0,
-            tex_width_, tex_height_,
+            get_relative_width(), get_relative_height(),
             ((byte_per_pixel_ == 3) ? GL_BGR : GL_BGRA),
             GL_UNSIGNED_BYTE,
             image_data_);
     }
     void Picture::unbind_write_pbo()
     {
-        if (image_data_)
-        {
             glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release pointer to mapping buffer
-        }
-#ifdef DEBUG_MODE
-        else
-        {
-            std::cout << "error : picture.cpp -> unbind_write_pbo\n";
-        }
-#endif
     }
     void Picture::sub_picture()
     {
@@ -80,7 +74,29 @@ namespace nsg
 
         // copy pixels from PBO to texture object
         // Use offset instead of ponter.
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_width_, tex_height_, pixel_format_, GL_UNSIGNED_BYTE, 0);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, relative_width_, relative_height_, pixel_format_, GL_UNSIGNED_BYTE, 0);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+    void Picture::set_width(int width)
+    {
+        relative_width_ = tex_width_ = width;
+#ifdef __APPLE__
+    //    relative_width_ *= 2;
+#endif
+    }
+    void Picture::set_height(int height)
+    {
+        relative_height_ = tex_height_ = height;
+#ifdef __APPLE__
+  //     relative_height_ *= 2;
+#endif
+    }
+    int Picture::get_relative_width()
+    {
+        return relative_width_;
+    }
+    int Picture::get_relative_height()
+    {
+        return relative_height_;
     }
 }
