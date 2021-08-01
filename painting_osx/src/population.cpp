@@ -98,7 +98,8 @@ namespace nsg
         }
         current_stage_++;
     }
-    int Population::get_current_stage() {
+    int Population::get_current_stage()
+    {
         return current_stage_;
     }
 }

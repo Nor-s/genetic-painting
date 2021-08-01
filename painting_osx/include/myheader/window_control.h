@@ -46,7 +46,7 @@ namespace nsg {
         void init_pbo();
         void clear_window_white();
         GLubyte** get_window_halfpixel();
-        GLubyte** get_window_fullpixel();
+        GLubyte* get_window_fullpixel();
         void window_to_file(const char* filename);
         void byte_to_file(GLubyte** pboMem, const char* filename);
         void set_buffersize_pbo();

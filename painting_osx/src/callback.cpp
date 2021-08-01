@@ -3,8 +3,8 @@
 namespace nsg
 {
     void render_callback()
-    { 
-    /*
+    {
+        /*
         if (WindowControl::size_ == 2)
         {
             GeneticAlgorithm::manager_->rendering_0();
@@ -56,7 +56,7 @@ namespace nsg
 #ifdef DEBUG_MODE
             std::cout << paths[i] << "\n";
 #endif
-            GeneticAlgorithm::picture_ = new SquareObject(paths[i]);
+            GeneticAlgorithm::picture_ = new Picture(paths[i]);
             int posx, posy;
             int width = GeneticAlgorithm::picture_->get_tex_width(), height = GeneticAlgorithm::picture_->get_tex_height();
             std::vector<WindowControl *> *window_p = &WindowControl::g_windows_;

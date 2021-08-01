@@ -4,19 +4,12 @@ glm::mat4 Shader::projection_matrix;
 
 namespace nsg
 {
-    SquareObject::SquareObject(int idx)
+    SquareObject::SquareObject() {}
+    SquareObject::SquareObject(const char *filepath)
     {
-        init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+        init_texture(filepath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
         set_vertices(tex_width_, tex_height_);
         init_buffer_objects();
-        init_shader(vs_shader_, fs_shader_);
-    }
-    SquareObject::SquareObject(const char *filePath)
-    {
-        init_texture(filePath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
-        set_vertices(tex_width_, tex_height_);
-        init_buffer_objects();
-        init_shader(vs_grayscale_shader_, fs_grayscale_shader_);
     }
     SquareObject::~SquareObject()
     {
@@ -28,6 +21,9 @@ namespace nsg
         glDeleteBuffers(1, &vbo_);
         glDeleteBuffers(1, &ebo_);
         delete shader_;
+    }
+    void SquareObject::init_shader() {
+        init_shader(vs_base_, fs_base_);
     }
     void SquareObject::init_shader(const char *vertex, const char *frag)
     {
@@ -110,6 +106,13 @@ namespace nsg
     void SquareObject::init_model()
     {
         model_transform_ = glm::mat4(1.0f);
+    }
+    void SquareObject::set_vertices()
+    {
+        vertices_[0] = vertices_[5] = (float)tex_width_ / 2.0f;
+        vertices_[10] = vertices_[15] = -(float)tex_width_ / 2.0f;
+        vertices_[1] = vertices_[16] = (float)tex_height_ / 2.0f;
+        vertices_[6] = vertices_[11] = -(float)tex_height_ / 2.0f;
     }
     void SquareObject::set_vertices(int width, int height)
     {

@@ -4,7 +4,7 @@
 namespace nsg
 {
     GeneticAlgorithm *GeneticAlgorithm::manager_ = nullptr;
-    SquareObject *GeneticAlgorithm::picture_ = nullptr;
+    Picture *GeneticAlgorithm::picture_ = nullptr;
     Population *GeneticAlgorithm::population_ = nullptr;
 
     GeneticAlgorithm::GeneticAlgorithm(int population_size, int dna_len, int max_stage, std::pair<float, float> brush_width)
@@ -41,7 +41,7 @@ namespace nsg
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
         if (population_ == nullptr)
         {
-            Brush::init_brushes();
+            Palette::init_brushes();
             population_ = new Population(
                 population_size_, dna_len_, max_stage_,
                 0.0f, 0.0f,
@@ -64,7 +64,8 @@ namespace nsg
             WindowControl::g_windows_[1]->window_to_file("screenshot1.png");
             glReadBuffer(GL_BACK);
         }
-        else if (WindowControl::size_ == 2 && glfwGetKey(WindowControl::g_windows_[0]->get_window(), GLFW_KEY_1) == GLFW_PRESS) {
+        else if (WindowControl::size_ == 2 && glfwGetKey(WindowControl::g_windows_[0]->get_window(), GLFW_KEY_1) == GLFW_PRESS)
+        {
             glfwMakeContextCurrent(WindowControl::g_windows_[0]->get_window());
             glReadBuffer(GL_FRONT);
             WindowControl::g_windows_[0]->window_to_file("screenshot2.png");
@@ -92,7 +93,7 @@ namespace nsg
                 {
                     std::cout << i << " : " << population_->fitness_ref(i) << "\n";
                 }
-                std::cout <<population_->get_current_stage()<< "-----\n";
+                std::cout << population_->get_current_stage() << "-----\n";
 #endif
                 population_->next_stage();
             }
@@ -159,7 +160,7 @@ double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
     {
         for (int i = 0; i < height / 2; i++)
         {
-            for (int j = 0; j < width * 3 ; j += 3)
+            for (int j = 0; j < width * 3; j += 3)
             {
                 int k = i * width * 3 + j;
                 dot += a[s][k] * b[s][k];
@@ -168,7 +169,7 @@ double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
             }
         }
     }
-        ret = (dot / (sqrt(denomA) * sqrt(denomB)));
+    ret = (dot / (sqrt(denomA) * sqrt(denomB)));
     delete[] b;
     return ret;
 }

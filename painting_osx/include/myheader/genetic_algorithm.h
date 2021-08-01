@@ -4,7 +4,7 @@
 
 #include "myheader/population.h"
 #include "myheader/window_control.h"
-#include "myheader/square_object.h"
+#include "myheader/picture.h"
 
 namespace nsg {
     class GeneticAlgorithm {
@@ -19,7 +19,7 @@ namespace nsg {
     public:
         static GeneticAlgorithm *manager_;
         static Population* population_;
-        static SquareObject *picture_;
+        static Picture *picture_;
         GeneticAlgorithm(int population_size, int dna_len, int max_stage, std::pair<float, float> brush_width);
 
         void process_input();

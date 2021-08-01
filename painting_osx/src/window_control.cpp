@@ -54,8 +54,7 @@ namespace nsg
             return nullptr;
         }
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_TEXTURE_2D);
 
         return window;
     }
@@ -85,13 +84,13 @@ namespace nsg
     void WindowControl::set_buffersize_pbo()
     {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, file_size_/2, nullptr, GL_DYNAMIC_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, file_size_ / 2, nullptr, GL_DYNAMIC_READ);
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, file_size_/2, nullptr, GL_DYNAMIC_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, file_size_ / 2, nullptr, GL_DYNAMIC_READ);
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[2]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, file_size_, nullptr, GL_DYNAMIC_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, file_size_, nullptr, GL_STREAM_READ);
         //unBind
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     }
@@ -110,26 +109,29 @@ namespace nsg
         set_screenshot_size();
         set_buffersize_pbo();
     }
-    GLubyte **WindowControl::get_window_fullpixel()
+    GLubyte *WindowControl::get_window_fullpixel()
     {
-        GLubyte **ret = new GLubyte *[1];
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[2]);
-        read_pixels(0, 0, width_, height_);
-        ret[0] = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        read_pixels(0, 0, width_, height_);
+        GLubyte *ret = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         return ret;
     }
     GLubyte **WindowControl::get_window_halfpixel()
     {
         GLubyte **pbomem = new GLubyte *[2];
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
-        read_pixels(0, 0,width_, height_ / 2);
+        read_pixels(0, 0, width_, height_ / 2);
 
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
-        read_pixels(0, height_ / 2,width_, height_ / 2);
+        read_pixels(0, height_ / 2, width_, height_ / 2);
 
         // Process partial images.  Mapping the buffer waits for
         // outstanding DMA transfers into the buffer to finish.
@@ -138,11 +140,7 @@ namespace nsg
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
         pbomem[1] = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         return pbomem;
     }
 
@@ -154,9 +152,8 @@ namespace nsg
         stbi_write_png(std::string("2" + std::string(filename)).c_str(), width_, height_ / 2, 3, tmp[1], stride_size_);
         delete[] tmp;
 #endif
-        GLubyte **tmpp = get_window_fullpixel();
-        stbi_write_png(filename, g_width_, g_height_, 3, tmpp[0], stride_size_);
-        delete[] tmpp;
+        GLubyte *full_pixel = get_window_fullpixel();
+        stbi_write_png(filename, g_width_, g_height_, 3, full_pixel, stride_size_);
     }
 
     void WindowControl::byte_to_file(GLubyte **pbomem, const char *filename)
@@ -173,16 +170,18 @@ namespace nsg
         stbi_write_png(std::string("2" + std::string(filename)).c_str(), width_, height_ / 2, 3, pbomem[1], stride_size_);
 #endif
     }
-    void WindowControl::set_screenshot_size() {
-        padding_ = width_%4; 
+    void WindowControl::set_screenshot_size()
+    {
+        padding_ = width_ % 4;
         stride_size_ = width_ * byte_per_pixel_ + padding_;
         file_size_ = stride_size_ * height_;
     }
-    void WindowControl::read_pixels(int x, int y, int width, int height) {
-            glReadPixels(
+    void WindowControl::read_pixels(int x, int y, int width, int height)
+    {
+        glReadPixels(
             x, y,
             width, height,
-            ((byte_per_pixel_ == 3)? GL_BGR : GL_BGRA),
+            ((byte_per_pixel_ == 3) ? GL_BGR : GL_BGRA),
             GL_UNSIGNED_BYTE,
             0);
     }
