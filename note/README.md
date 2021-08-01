@@ -16,8 +16,8 @@
 
 <img src = "/note/screenshot/2021-08-02 (1).gif" width="60%" height="60%" title="n=8" alt="n=8"></img>
 
-<img src = "/note/screenshot/2021-08-02 (2).gif" width="60%" height="60%" title="n=8" alt="n=8"></img>
+<img src = "/note/screenshot/2021-08-02 (2).png" width="60%" height="60%" title="n=8" alt="n=8"></img>
 
 <img src = "/note/screenshot/2021-08-02 (3).gif" width="60%" height="60%" title="n=8" alt="n=8"></img>
 
-<img src = "/note/screenshot/2021-08-02 (4).gif" width="60%" height="60%" title="n=8" alt="n=8"></img>
+<img src = "/note/screenshot/2021-08-02 (4).png" width="60%" height="60%" title="n=8" alt="n=8"></img>
