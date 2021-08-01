@@ -1,5 +1,18 @@
 # genetic-painting
 
+<img src = "/note/screenshot/2021-08-02 (1).gif" width="50%" height="50%" title="n=8" alt="n=8"></img>
+
+
+# library
+OpenGL
+
+GLFW
+
+glad
+
+glm
+
+stbi_image
 
 # link
 
