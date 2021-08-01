@@ -15,10 +15,10 @@ using namespace nsg;
 
 GeneticAlgorithm *g_genetic_manager;
 
-std::pair<float, float> g_brush_width = {0.08, 0.2};
-int g_population_size = 100;
+std::pair<float, float> g_brush_width = {0.05, 0.1};
+int g_population_size = 20;
 int g_dna_len = 10;
-int g_max_stage = 100;
+int g_max_stage = 10;
 
 int main()
 {

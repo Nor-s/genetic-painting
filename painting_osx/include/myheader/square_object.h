@@ -32,6 +32,7 @@ namespace nsg
         };
         const char *vs_base_ = "../shaders/vs_base.vs";
         const char *fs_base_ = "../shaders/fs_base.fs";
+    protected:
         unsigned int texture_id_;
         unsigned int vao_;
         unsigned int vbo_;
@@ -47,9 +48,10 @@ namespace nsg
         SquareObject(GLubyte *data, int width, int height);
         virtual ~SquareObject();
         virtual void draw();
+        void init_texture(GLvoid* image_data, int width, int height, GLenum pixel_format);
         void init_texture(const char *filepath, GLint inter_format, GLenum origin_format, GLenum origin_type);
-        void init_buffer_objects();
         void init_shader(const char *vertex, const char *frag);
+        void init_buffer_objects();
         void init_shader();
         void init_texture_unit();
         void init_model();

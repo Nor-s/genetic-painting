@@ -1,5 +1,4 @@
 #include "myheader/genetic_algorithm.h"
-
 #define DEBUG_MODE
 namespace nsg
 {
@@ -39,6 +38,11 @@ namespace nsg
     void GeneticAlgorithm::init_population()
     {
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
+        current_top_painting_ = new Picture(
+            WindowControl::g_width_,
+            WindowControl::g_height_,
+            3,
+            GL_BGR);
         if (population_ == nullptr)
         {
             Palette::init_brushes();
@@ -82,10 +86,18 @@ namespace nsg
 
             if (population_ != nullptr)
             {
-                caculate_fitness();
-                population_->sort_dna();
+                for(int i = 0; i < max_stage_; i++) {
+                    caculate_fitness();
+                    population_->sort_dna();
+                    population_->next_stage();
+                }
                 WindowControl::g_windows_[1]->clear_window_white();
+                current_top_painting_->bind_write_pbo_pointer();
+                current_top_painting_->draw();
                 population_->top()->draw_all();
+                current_top_painting_->read_back_buffer();
+                current_top_painting_->unbind_write_pbo();
+                current_top_painting_->sub_picture();
 #ifdef DEBUG_MODE
                 std::cout << "top: " << population_->top()->fitness_ref() << "\n";
                 int population_size = population_->get_population_size();
@@ -95,7 +107,6 @@ namespace nsg
                 }
                 std::cout << population_->get_current_stage() << "-----\n";
 #endif
-                population_->next_stage();
             }
         }
     }
@@ -119,6 +130,7 @@ namespace nsg
         glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
         glDrawBuffer(GL_BACK);
         WindowControl::g_windows_[1]->clear_window_white();
+        current_top_painting_->draw();
         dna->draw_all();
         GLubyte **ret = WindowControl::g_windows_[1]->get_window_halfpixel();
         return ret;

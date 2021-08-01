@@ -15,7 +15,7 @@ namespace nsg {
         int max_stage_;
 
         GLubyte** grayscale_picture_;
-        SquareObject *current_top_painting_;
+        Picture *current_top_painting_;
     public:
         static GeneticAlgorithm *manager_;
         static Population* population_;

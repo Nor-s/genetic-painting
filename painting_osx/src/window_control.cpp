@@ -1,4 +1,5 @@
 #include "myheader/window_control.h"
+//#define DEBUG_MODE
 
 namespace nsg
 {
@@ -122,6 +123,8 @@ namespace nsg
     GLubyte **WindowControl::get_window_halfpixel()
     {
         GLubyte **pbomem = new GLubyte *[2];
+        pbomem[0] = nullptr;
+        pbomem[1] = nullptr;
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
@@ -137,21 +140,24 @@ namespace nsg
         // outstanding DMA transfers into the buffer to finish.
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
         pbomem[0] = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+#ifdef DEBUG_MODE
+        if(!pbomem[0]) {
+            std::cout<<"error : glMapBuffer - window_control.cpp - pbo_[0]\n";
+        }
+#endif
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
         pbomem[1] = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-
+#ifdef DEBUG_MODE
+        if(!pbomem[1]) {
+            std::cout<<"error : glMapBuffer - window_control.cpp - pbo_[1]\n";
+        }
+#endif
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         return pbomem;
     }
 
     void WindowControl::window_to_file(const char *filename)
     {
-#ifdef DEBUG_MODE
-        GLubyte **tmp = get_window_halfpixel();
-        stbi_write_png(std::string("1" + std::string(filename)).c_str(), width_, height_ / 2, 3, tmp[0], stride_size_);
-        stbi_write_png(std::string("2" + std::string(filename)).c_str(), width_, height_ / 2, 3, tmp[1], stride_size_);
-        delete[] tmp;
-#endif
         GLubyte *full_pixel = get_window_fullpixel();
         stbi_write_png(filename, g_width_, g_height_, 3, full_pixel, stride_size_);
     }
@@ -172,7 +178,7 @@ namespace nsg
     }
     void WindowControl::set_screenshot_size()
     {
-        padding_ = width_ % 4;
+        padding_ = (width_ * (4 - byte_per_pixel_)) % 4;;
         stride_size_ = width_ * byte_per_pixel_ + padding_;
         file_size_ = stride_size_ * height_;
     }
