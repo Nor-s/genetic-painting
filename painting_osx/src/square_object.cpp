@@ -5,9 +5,9 @@ glm::mat4 Shader::projection_matrix;
 namespace nsg
 {
     SquareObject::SquareObject() {}
-    SquareObject::SquareObject(const char *filepath)
+    SquareObject::SquareObject(const char *filepath, int byte_per_pixel)
     {
-        init_texture(filepath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        init_texture(filepath, GL_RGBA, (byte_per_pixel == 3)?GL_RGB:GL_RGBA, GL_UNSIGNED_BYTE);
         set_vertices(tex_width_, tex_height_);
         init_buffer_objects();
     }
@@ -31,7 +31,7 @@ namespace nsg
         init_texture_unit();
         init_model();
         set_model_to_uniform();
-        set_bright_to_uniform(1.0f);
+        set_color_to_uniform(1.0f);
     }
     void SquareObject::init_texture(GLvoid* image_data, int width, int height, GLenum pixel_format) {
             // init texture objects
@@ -68,8 +68,11 @@ namespace nsg
             std::cout << "Failed to load texture" << std::endl;
         }
 #ifdef __APPLE__
-    tex_width_/=2;tex_height_ /=2;
+    tex_width_/=4;tex_height_ /=4;
 #endif
+        while(tex_width_ > 500) {
+            tex_width_*=0.8f;tex_height_ *=0.8f;
+        }
         stbi_image_free(data);
     }
     void SquareObject::init_buffer_objects()
@@ -103,7 +106,7 @@ namespace nsg
     void SquareObject::init_texture_unit()
     {
         shader_->use();
-        shader_->setInt("texture0", 0);
+        shader_->setInt("Texture0", 0);
     }
     void SquareObject::draw()
     {
@@ -135,12 +138,20 @@ namespace nsg
     void SquareObject::set_model_to_uniform()
     {
         shader_->use();
-        shader_->setMat4("model", model_transform_);
+        shader_->setMat4("Model", model_transform_);
     }
-    void SquareObject::set_bright_to_uniform(float bright)
+    void SquareObject::set_color_to_uniform(float r, float g, float b, float a) {
+        shader_->use();
+        shader_->setVec4("Color", r, g, b, a);
+    }
+    void SquareObject::set_color_to_uniform(float color) {
+        shader_->use();
+        shader_->setVec4("Color", color, color, color, color);
+    }
+    void SquareObject::set_color_to_uniform(float color[4])
     {
         shader_->use();
-        shader_->setFloat("bright", bright);
+        shader_->setVec4("Color", color[0], color[1], color[2], color[3]);
     }
     int SquareObject::get_tex_width()
     {

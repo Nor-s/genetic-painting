@@ -19,8 +19,9 @@ namespace nsg
         GLubyte* image_data_;
         int image_size_;
     public:
-        Picture(int width, int height, int channel_count, GLenum pixel_format);
-        Picture(const char *filepath);
+        Picture(int width, int height, int byte_per_pixel, GLenum pixel_format);
+        Picture(const char *filepath, int byte_per_pixel, bool is_gray);
+        Picture(const char *filepath, int byte_per_pixel);
         virtual ~Picture();
         void init_picture();
         void sub_picture();

@@ -2,33 +2,27 @@
 
 namespace nsg
 {
-    DNA::DNA(DNA &a, DNA &b)
+
+    DNA::DNA(DNA &a, DNA &b, std::pair<float, float>& brush_width)
     {
         dna_len_ = a.dna_len_;
         x_ = a.x_;
         y_ = a.y_;
         width_ = a.width_;
         height_ = a.height_;
-        brush_width_ = a.brush_width_;
-        int pivot = rand() % (dna_len_ - 2) + 1;
-        int pivot2 = rand() % (dna_len_ - 2) + 1;
-        if (pivot > pivot2)
+        brush_width_ = brush_width;
+        for (int i = 0; i < dna_len_; i++)
         {
-            std::swap(pivot, pivot2);
-        }
-        for (int i = 0; i < pivot; i++)
-        {
-            dna.push_back(a.dna[i]);
-        }
-        for (int i = pivot; i < pivot2; i++)
-        {
-            dna.push_back(b.dna[i]);
-        }
-        for (int i = pivot2; i < dna_len_; i++)
-        {
-            dna.push_back(a.dna[i]);
+            if(rand()%2 == 0) {
+                dna.push_back(a.dna[i]);
+            }
+            else {
+                dna.push_back(b.dna[i]);
+            }
+            set_scale(dna.back());
         }
         fitness_ = 0;
+
     }
 
     DNA::DNA(int n, float x, float y, float width, float height, std::pair<float, float> brush_width)
@@ -50,7 +44,7 @@ namespace nsg
         {
             dna.push_back(Palette());
             set_rotate(dna.back());
-            set_brightness(dna.back());
+            set_color(dna.back());
             set_brushidx(dna.back());
             set_scale(dna.back());
             set_translate(dna.back());
@@ -65,9 +59,15 @@ namespace nsg
     {
         brush.set_rotate(getRandFloat(0.0f, 360.0f));
     }
-    void DNA::set_brightness(Palette &brush)
+    void DNA::set_color(Palette &brush)
     {
-        brush.set_brightness(getRandFloat(0.0f, 1.0f));
+        float color[4] = {
+            getRandFloat(0.0f, 1.0f),
+            getRandFloat(0.0f, 1.0f),
+            getRandFloat(0.0f, 1.0f),
+            1.0f
+         };
+        brush.set_color(color);
     }
     void DNA::set_brushidx(Palette &brush)
     {
@@ -75,10 +75,10 @@ namespace nsg
     }
     void DNA::set_scale(Palette &brush)
     {
-        float sxyz[3] = {
-            getRandFloat(brush_width_.first, brush_width_.second),
-            getRandFloat(brush_width_.first, brush_width_.second),
-            1.0f};
+            float a = getRandFloat(brush_width_.first, brush_width_.second);
+        float sxyz[3] = { a, a, 1.0};
+      //  sxyz[0] = getRandFloat(brush_width_.first, brush_width_.second);
+       // sxyz[1] = getRandFloat(brush_width_.first, brush_width_.second);
         brush.set_scale(sxyz);
     }
     void DNA::set_translate(Palette &brush)
@@ -95,32 +95,27 @@ namespace nsg
         {
             if (rand() % 2 == 0)
             {
-                if (rand() % 2 == 0)
-                {
-                    set_rotate(dna[i]);
-                }
-                if (rand() % 2 == 0)
-                {
-                    set_brightness(dna[i]);
-                }
-                if (rand() % 2 == 0)
-                {
+                set_rotate(dna[i]);
+                if(rand()%5 != 0) {
                     set_brushidx(dna[i]);
                 }
-                if (rand() % 2 == 0)
-                {
+                if(rand()%5 != 0) {
                     set_scale(dna[i]);
                 }
-                if (rand() % 2 == 0)
+                if (rand() % 10 == 0)
+                {
+                    set_color(dna[i]);
+                }
+                if (rand() % 10 == 0)
                 {
                     set_translate(dna[i]);
                 }
             }
         }
     }
-    DNA *DNA::crossover(DNA &a)
+    DNA *DNA::crossover(DNA &a, std::pair<float, float>& brush_width)
     {
-        return new DNA(a, a);
+        return new DNA(*this, a, brush_width);
     }
     void DNA::draw(int i)
     {

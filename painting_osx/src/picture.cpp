@@ -22,11 +22,20 @@ namespace nsg
         SquareObject::translate(0.0f, 0.0f, -50.0f);
         SquareObject::set_model_to_uniform();
     }
-
-    Picture::Picture(const char *filepath) : SquareObject(filepath)
-    {
+    Picture::Picture(const char *filepath, int byte_per_pixel, bool is_gray) : SquareObject(filepath, byte_per_pixel) {
+        byte_per_pixel_ = byte_per_pixel;
         image_data_ = nullptr;
-        SquareObject::init_shader(vs_grayscale_shader_, fs_grayscale_shader_);
+        SquareObject::init_shader();
+        if(is_gray) {
+            set_color_to_uniform(-1.0f, -1.0f, -1.0f, 1.0f);
+        }
+    }
+
+    Picture::Picture(const char *filepath, int byte_per_pixel) : SquareObject(filepath, byte_per_pixel)
+    {
+        byte_per_pixel_ = byte_per_pixel;
+        image_data_ = nullptr;
+        SquareObject::init_shader();
     }
     Picture::~Picture()
     {
@@ -81,14 +90,14 @@ namespace nsg
     {
         relative_width_ = tex_width_ = width;
 #ifdef __APPLE__
-    //    relative_width_ *= 2;
+        relative_width_ *= 2;
 #endif
     }
     void Picture::set_height(int height)
     {
         relative_height_ = tex_height_ = height;
 #ifdef __APPLE__
-  //     relative_height_ *= 2;
+       relative_height_ *= 2;
 #endif
     }
     int Picture::get_relative_width()

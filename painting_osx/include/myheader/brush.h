@@ -26,14 +26,14 @@ namespace nsg {
         float translate_[3];
         float rotate_;
         float scale_[3];
-        float brightness_;
+        float color_[4];
         int idx_;
 
         Palette();
         void set_translate(float translate[3]);
         void set_scale(float scale[3]);
         void set_rotate(float rotate);
-        void set_brightness(float brightness);
+        void set_color(float color[4]);
         void set_brushidx(int idx);
         void draw();
     };

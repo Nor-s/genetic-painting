@@ -54,10 +54,6 @@ namespace nsg
             std::cout << "Failed to initialize GLAD" << std::endl;
             return nullptr;
         }
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 
         return window;
     }
@@ -180,7 +176,7 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
         stbi_write_png(filename, get_relative_width(), get_relative_height(), byte_per_pixel_, full, stride_size_);
 #ifdef DEBUG_MODE
-        stbi_write_png(std::string("1" + std::string(filename)).c_str(),  get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[0], stride_size_);
+        stbi_write_png(std::string("1" + std::string(filename)).c_str(), get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[0], stride_size_);
         stbi_write_png(std::string("2" + std::string(filename)).c_str(), get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[1], stride_size_);
 #endif
     }

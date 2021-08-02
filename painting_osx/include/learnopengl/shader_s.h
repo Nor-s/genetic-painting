@@ -106,7 +106,7 @@ public:
     void use() 
     { 
         glUseProgram(ID); 
-        setMat4("projection",projection_matrix);
+        setMat4("Projection",projection_matrix);
     }
     // utility uniform functions
     // ------------------------------------------------------------------------

@@ -28,20 +28,20 @@ namespace nsg {
         float width_;
         float height_;
     public:  
-        DNA(DNA& a, DNA& b);
+        DNA(DNA& a, DNA& b, std::pair<float, float> & brush_width);
         DNA(int n, float x, float y, float width, float height, std::pair<float, float> brush_width_);
         ~DNA();
         bool operator <(DNA& a);
         double& fitness_ref();
         void initDNA();
         void mutate();
-        DNA* crossover(DNA& a);
+        DNA* crossover(DNA& a, std::pair<float, float>& brush_width);
         void draw(int i);    
         void draw_all();
         void set_translate(Palette& brush);
         void set_scale(Palette& brush);
         void set_rotate(Palette& brush);
-        void set_brightness(Palette& brush);
+        void set_color(Palette& brush);
         void set_brushidx(Palette& brush);
         int size();
     };

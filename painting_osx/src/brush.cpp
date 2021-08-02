@@ -3,7 +3,7 @@
 namespace nsg {
     Brush::Brush(int idx) {
         init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
-        set_vertices(tex_height_, tex_height_);
+        set_vertices();
         init_buffer_objects();
         init_shader();
     }
@@ -47,9 +47,11 @@ namespace nsg
     {
         rotate_ = rotate;
     }
-    void Palette::set_brightness(float brightness)
+    void Palette::set_color(float color[4])
     {
-        brightness_ = brightness;
+        for(int i = 0; i < 4; i++) {
+            color_[i] = color[i];
+        }
     }
     void Palette::set_brushidx(int idx)
     {
@@ -63,7 +65,7 @@ namespace nsg
         p->rotate(rotate_);
         p->scale(scale_);
         p->scale(0.4);
-        p->set_bright_to_uniform(brightness_);
+        p->set_color_to_uniform(color_);
         p->set_model_to_uniform();
         p->draw();
     }

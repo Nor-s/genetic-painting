@@ -1,6 +1,7 @@
 #ifndef MY_DNA_H
 #define MY_DNA_H
 
+
 #include "myheader/dna.h"
 
 namespace nsg {
@@ -27,6 +28,8 @@ namespace nsg {
         int get_population_size();
         DNA* get_dna(int idx);
         DNA* top();
+
+        void swap(int idx, DNA* a);
 
         int get_current_stage();
     };
