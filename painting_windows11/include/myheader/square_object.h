@@ -44,7 +44,7 @@ namespace nsg
 
     public:
         SquareObject();
-        SquareObject(const char *filepath);
+        SquareObject(const char *filepath, int byte_per_pixel);
         SquareObject(GLubyte *data, int width, int height);
         virtual ~SquareObject();
         virtual void draw();

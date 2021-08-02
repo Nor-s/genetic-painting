@@ -83,9 +83,9 @@ namespace nsg
         int size = population_size_;
 
         current_stage_++;
-        if(current_brush_width_.first > 0.01) {
-                current_brush_width_.first -= 0.00002f;
-                current_brush_width_.second -= 0.00002f;
+        if(current_brush_width_.first > 0.03) {
+            current_brush_width_.first -= 0.001;
+            current_brush_width_.second -= 0.001;
         }
     
         for (int i = 0; i < size / 2; i++)

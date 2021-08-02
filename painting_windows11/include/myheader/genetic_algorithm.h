@@ -13,10 +13,12 @@ namespace nsg {
         int population_size_;
         int dna_len_;
         int max_stage_;
+        int best_score_;
 
         GLubyte** grayscale_picture_;
         Picture *current_top_painting_;
     public:
+        static int picture_byte_per_pixel_;
         static GeneticAlgorithm *manager_;
         static Population* population_;
         static Picture *picture_;

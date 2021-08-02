@@ -11,25 +11,14 @@ namespace nsg
         width_ = a.width_;
         height_ = a.height_;
         brush_width_ = brush_width;
-        int pivot = rand() % (dna_len_ - 2) + 1;
-        int pivot2 = rand() % (dna_len_ - 2) + 1;
-        if (pivot > pivot2)
+        for (int i = 0; i < dna_len_; i++)
         {
-            std::swap(pivot, pivot2);
-        }
-        for (int i = 0; i < pivot; i++)
-        {
-            dna.push_back(a.dna[i]);
-            set_scale(dna.back());
-        }
-        for (int i = pivot; i < pivot2; i++)
-        {
-            dna.push_back(b.dna[i]);
-            set_scale(dna.back());
-        }
-        for (int i = pivot2; i < dna_len_; i++)
-        {
-            dna.push_back(a.dna[i]);
+            if(rand()%2 == 0) {
+                dna.push_back(a.dna[i]);
+            }
+            else {
+                dna.push_back(b.dna[i]);
+            }
             set_scale(dna.back());
         }
         fitness_ = 0;
@@ -82,9 +71,8 @@ namespace nsg
     {
             float a = getRandFloat(brush_width_.first, brush_width_.second);
         float sxyz[3] = { a, a, 1.0};
-  //          getRandFloat(brush_width_.first, brush_width_.second),
-    //        getRandFloat(brush_width_.first, brush_width_.second),
-      //      1.0f};
+      //  sxyz[0] = getRandFloat(brush_width_.first, brush_width_.second);
+       // sxyz[1] = getRandFloat(brush_width_.first, brush_width_.second);
         brush.set_scale(sxyz);
     }
     void DNA::set_translate(Palette &brush)
@@ -101,23 +89,20 @@ namespace nsg
         {
             if (rand() % 2 == 0)
             {
-                if (rand() % 2 == 0)
-                {
+                if(rand()%2 == 0) {
                     set_rotate(dna[i]);
+                }
+                if(rand()%2 == 0) {
+                    set_brushidx(dna[i]);
+                }
+                if(rand()%2 == 0) {
+                    set_scale(dna[i]);
                 }
                 if (rand() % 2 == 0)
                 {
                     set_brightness(dna[i]);
                 }
-                if (rand() % 2 == 0)
-                {
-                    set_brushidx(dna[i]);
-                }
-                if (rand() % 2 == 0)
-                {
-                    set_scale(dna[i]);
-                }
-                if (rand() % 2 == 0)
+                if (rand() % 10 == 0)
                 {
                     set_translate(dna[i]);
                 }

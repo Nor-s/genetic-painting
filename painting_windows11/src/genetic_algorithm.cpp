@@ -5,6 +5,7 @@ namespace nsg
     GeneticAlgorithm *GeneticAlgorithm::manager_ = nullptr;
     Picture *GeneticAlgorithm::picture_ = nullptr;
     Population *GeneticAlgorithm::population_ = nullptr;
+    int GeneticAlgorithm::picture_byte_per_pixel_;
 
     /*
         init Algorithm
@@ -14,6 +15,7 @@ namespace nsg
     */
     GeneticAlgorithm::GeneticAlgorithm(int population_size, int dna_len, int max_stage, std::pair<float, float> brush_width)
     {
+        best_score_ = 0;
         population_size_ = population_size;
         dna_len_ = dna_len;
         max_stage_ = max_stage;
@@ -28,7 +30,7 @@ namespace nsg
     void GeneticAlgorithm::loop_until_drop()
     {
         //for drop image
-        while (WindowControl::size_ == 1 && !glfwWindowShouldClose(WindowControl::g_windows_[0]->get_window()))
+        while (picture_ == nullptr && !glfwWindowShouldClose(WindowControl::g_windows_[0]->get_window()))
         {
             process_input();
             glfwPollEvents();
@@ -51,7 +53,7 @@ namespace nsg
             glfwSwapBuffers(WindowControl::g_windows_[1]->get_window());
             glfwPollEvents();
         }
-    }
+    }    
     /*
         1) init current_top_painting 
             it is first "all black" 
@@ -124,8 +126,11 @@ namespace nsg
 
             if (population_ != nullptr)
             {
-                caculate_fitness();
-               population_->sort_dna();
+                for(int i = 0; i < max_stage_; i++) {
+                    caculate_fitness();
+                    population_->sort_dna();
+                    population_->next_stage();
+                }
 #ifdef DEBUG_MODE
                 std::cout << "top: " << population_->top()->fitness_ref() << "\n";
                 int population_size = population_->get_population_size();
@@ -135,8 +140,9 @@ namespace nsg
                 }
                 std::cout << population_->get_current_stage() << "-----\n";
 #endif
-                population_->next_stage();
-            glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
+            if(best_score_ < population_->top()->fitness_ref()){
+                best_score_ = population_->top()->fitness_ref();
+                glfwMakeContextCurrent(WindowControl::g_windows_[1]->get_window());
                 WindowControl::g_windows_[1]->clear_window_white();
                 current_top_painting_->bind_write_pbo_pointer();
                 current_top_painting_->draw();
@@ -144,7 +150,7 @@ namespace nsg
                 current_top_painting_->read_back_buffer();
                 current_top_painting_->unbind_write_pbo();
                 current_top_painting_->sub_picture();
-
+            }
             }
         }
     }
@@ -230,17 +236,14 @@ double fitnessFunction(GLubyte **a, GLubyte **b, int width, int height)
     double ret = 0.0;
     double dot = 0.0, denomA = 0.0, denomB = 0.0;
 
-    for (int s = 0; s < 1; s++)
+    for (int i = 0; i < height / 2; i++)
     {
-        for (int i = 0; i < height / 2; i++)
+        for (int j = 0; j < width * 3; j += 3)
         {
-            for (int j = 0; j < width * 3; j += 3)
-            {
-                int k = i * width * 3 + j;
-                dot += a[s][k] * b[s][k];
-                denomA += a[s][k] * a[s][k];
-                denomB += b[s][k] * b[s][k];
-            }
+            int k = i * width * 3 + j;
+            dot += a[0][k] * b[0][k] + a[1][k] * b[1][k];
+            denomA += a[0][k] * a[0][k]+a[1][k] * a[1][k];
+            denomB += b[0][k] * b[0][k]+b[1][k] * b[1][k];
         }
     }
     ret = (dot / (sqrt(denomA) * sqrt(denomB)));

@@ -5,9 +5,9 @@ glm::mat4 Shader::projection_matrix;
 namespace nsg
 {
     SquareObject::SquareObject() {}
-    SquareObject::SquareObject(const char *filepath)
+    SquareObject::SquareObject(const char *filepath, int byte_per_pixel)
     {
-        init_texture(filepath, GL_RGBA, GL_RGB, GL_UNSIGNED_BYTE);
+        init_texture(filepath, GL_RGBA, (byte_per_pixel == 3)?GL_RGB:GL_RGBA, GL_UNSIGNED_BYTE);
         set_vertices(tex_width_, tex_height_);
         init_buffer_objects();
     }
@@ -70,6 +70,9 @@ namespace nsg
 #ifdef __APPLE__
     tex_width_/=2;tex_height_ /=2;
 #endif
+        while(tex_width_ > 500) {
+            tex_width_*=0.8f;tex_height_ *=0.8f;
+        }
         stbi_image_free(data);
     }
     void SquareObject::init_buffer_objects()

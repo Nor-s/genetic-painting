@@ -23,8 +23,9 @@ namespace nsg
         SquareObject::set_model_to_uniform();
     }
 
-    Picture::Picture(const char *filepath) : SquareObject(filepath)
+    Picture::Picture(const char *filepath, int byte_per_pixel) : SquareObject(filepath, byte_per_pixel)
     {
+        byte_per_pixel_ = byte_per_pixel;
         image_data_ = nullptr;
         SquareObject::init_shader(vs_grayscale_shader_, fs_grayscale_shader_);
     }

@@ -199,12 +199,16 @@ namespace nsg
     void WindowControl::set_height(int height)
     {
         relative_height_ = g_height_ = height;
+#ifdef __APPLE__
         relative_height_ *= 2;
+#endif
     }
     void WindowControl::set_width(int width)
     {
         relative_width_ = g_width_ = width;
+#ifdef __APPLE__
         relative_width_ *= 2;
+#endif
     }
     int WindowControl::get_relative_height()
     {
