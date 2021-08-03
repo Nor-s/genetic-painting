@@ -45,14 +45,16 @@ namespace nsg
         current can't use 
     */
     void resize_callback(GLFWwindow *window, int width, int height)
-    {
+    { 
+        /*
         glViewport(0, 0, width, height);
         float widthFactor = static_cast<float>(width) / static_cast<float>(WindowControl::g_width_);
         float heightFactor = static_cast<float>(height) / static_cast<float>(WindowControl::g_height_);
         Shader::projection_matrix = glm::ortho(
             -(float)WindowControl::g_width_ / 2.0f * widthFactor, (float)WindowControl::g_width_ / 2.0f * widthFactor,
             -(float)WindowControl::g_height_ / 2.0f * heightFactor, (float)WindowControl::g_height_ / 2.0f * heightFactor,
-            0.0f, 100.0f);
+            0.0f, 100.0f);     
+       */
     }
     /*
         drop the image.
@@ -71,21 +73,21 @@ namespace nsg
             std::cout << paths[i] << "\n";
 #endif
             GeneticAlgorithm::picture_ = new Picture(paths[i], GeneticAlgorithm::picture_byte_per_pixel_);
-                    int posx, posy;
-        int width = GeneticAlgorithm::picture_->get_tex_width(), height = GeneticAlgorithm::picture_->get_tex_height();
+            int posx, posy;
+            int width = GeneticAlgorithm::picture_->get_tex_width(), height = GeneticAlgorithm::picture_->get_tex_height();
 
-        std::vector<WindowControl *> *window_p = &WindowControl::g_windows_;
+            std::vector<WindowControl *> *window_p = &WindowControl::g_windows_;
 
-        (*window_p)[0]->resize_window(width, height);
-        glfwGetWindowPos((*window_p)[0]->get_window(), &posx, &posy);
-        Shader::projection_matrix = glm::ortho(
-            -(float)WindowControl::g_width_ / 2.0f, (float)WindowControl::g_width_ / 2.0f,
-            -(float)WindowControl::g_height_ / 2.0f, (float)WindowControl::g_height_ / 2.0f,
-            0.0f, 100.0f);
+            (*window_p)[0]->resize_window(width, height);
+            glfwGetWindowPos((*window_p)[0]->get_window(), &posx, &posy);
+            Shader::projection_matrix = glm::ortho(
+                0.0f, (float)width ,
+                0.0f, (float)height,
+                0.0f, 100.0f);
 
-        (*window_p).push_back(new WindowControl(width, height, "painting"));
-        glfwSetWindowPos((*window_p)[1]->get_window(), posx + width, posy);
-        init_callback((*window_p)[1]->get_window(), false);
+            (*window_p).push_back(new WindowControl(width, height, "painting"));
+            glfwSetWindowPos((*window_p)[1]->get_window(), posx + width, posy);
+            init_callback((*window_p)[1]->get_window(), false);
         }
     }
 }

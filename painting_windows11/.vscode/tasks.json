@@ -20,7 +20,8 @@
                 "-lglad",
                 "-lpthread",
                 "-lgdi32",
-                "-lopengl32"
+                "-lopengl32",
+                "-O2"
             ],
             "problemMatcher": [
                 "$gcc"

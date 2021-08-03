@@ -16,16 +16,20 @@ namespace nsg
         int relative_height_;
         int relative_width_;
         GLenum pixel_format_;
-        GLubyte* image_data_;
+        GLubyte *image_data_;
         int image_size_;
+        int padding_;
+
     public:
         Picture(int width, int height, int byte_per_pixel, GLenum pixel_format);
         Picture(const char *filepath, int byte_per_pixel);
         virtual ~Picture();
         void init_picture();
-        void sub_picture();
         void init_pbo();
-        void bind_write_pbo_pointer();
+        void prepare_sub_picture();
+        void start_sub_picture();
+        void start_sub_picture(int posx, int posy, int width, int height);
+        void read_back_buffer(int posx, int posy, int width, int height);
         void read_back_buffer();
         void unbind_write_pbo();
         void set_width(int width);

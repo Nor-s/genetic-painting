@@ -32,6 +32,7 @@ namespace nsg
         };
         const char *vs_base_ = "../shaders/vs_base.vs";
         const char *fs_base_ = "../shaders/fs_base.fs";
+
     protected:
         unsigned int texture_id_;
         unsigned int vao_;
@@ -43,12 +44,11 @@ namespace nsg
         glm::mat4 model_transform_;
 
     public:
+        static bool g_is_grayscale_;
         SquareObject();
-        SquareObject(const char *filepath, int byte_per_pixel);
-        SquareObject(GLubyte *data, int width, int height);
         virtual ~SquareObject();
         virtual void draw();
-        void init_texture(GLvoid* image_data, int width, int height, GLenum pixel_format);
+        void init_texture(GLvoid *image_data, int width, int height, GLenum pixel_format);
         void init_texture(const char *filepath, GLint inter_format, GLenum origin_format, GLenum origin_type);
         void init_shader(const char *vertex, const char *frag);
         void init_buffer_objects();
@@ -59,7 +59,9 @@ namespace nsg
         void set_vertices();
         void set_projection_to_uniform(const glm::mat4 &projection);
         void set_model_to_uniform();
-        void set_bright_to_uniform(float bright);
+        void set_color_to_uniform(float color[4]);
+        void set_color_to_uniform(float color);
+        void set_color_to_uniform(float r, float g, float b, float a);
         int get_tex_width();
         int get_tex_height();
         void translate(float t[3]);
