@@ -1,5 +1,5 @@
 #include "myheader/window_control.h"
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 namespace nsg
 {
@@ -9,8 +9,10 @@ namespace nsg
     int WindowControl::g_height_ = 800;
     int WindowControl::g_width_ = 800;
     int WindowControl::byte_per_pixel_ = 3;
-    int WindowControl::stride_size_ = 3;
+    int WindowControl::stride_size_ = 0;
     int WindowControl::file_size_ = 0;
+    int WindowControl::relative_height_ = 0;
+    int WindowControl::relative_width_ = 0;
 
     WindowControl::WindowControl(int width, int height, const char *title)
     {
@@ -26,6 +28,7 @@ namespace nsg
     WindowControl::~WindowControl()
     {
         glDeleteBuffers(3, pbo_);
+        glfwDestroyWindow(window_);
     }
     GLFWwindow *WindowControl::init_window()
     {
@@ -60,6 +63,10 @@ namespace nsg
     }
     GLFWwindow *WindowControl::get_window()
     {
+        if (window_ == nullptr)
+        {
+            return nullptr;
+        }
         return window_;
     }
 
@@ -148,7 +155,8 @@ namespace nsg
         stride_size_ = get_relative_width() * byte_per_pixel_ + padding_;
         file_size_ = stride_size_ * get_relative_height();
     }
-    int WindowControl::get_file_size() {
+    int WindowControl::get_file_size()
+    {
         return file_size_;
     }
     void WindowControl::read_pixels(int x, int y, int width, int height)
@@ -163,16 +171,28 @@ namespace nsg
     GLubyte *WindowControl::get_window_pixel(unsigned int pbo_id, int x, int y, int width, int height)
     {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_id);
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
         read_pixels(x, y, width, height);
         GLubyte *ret = (GLubyte *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-
+#ifdef DEBUG_MODE
+        if (!ret)
+        {
+            std::cout << "error : glmapbuffer - window_control.cpp \n";
+        }
+#endif
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+#ifdef DEBUG_MODE
+        if (!ret)
+        {
+            std::cout << "error : glmapbuffer - window_control.cpp \n";
+        }
+#endif
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         return ret;
     }
-    
-    GLubyte **WindowControl::get_window_halfpixel(){
+
+    GLubyte **WindowControl::get_window_halfpixel()
+    {
         GLubyte **pbomem = new GLubyte *[2];
 
         pbomem[0] = get_window_pixel(pbo_[0], 0, 0, relative_width_, relative_height_ / 2);
@@ -225,26 +245,17 @@ namespace nsg
 
     void WindowControl::byte_to_file(GLubyte **pbomem, const char *filename)
     {
-        GLubyte *full = new GLubyte[file_size_];
-        for (int i = 0; i < file_size_ / 2; i++)
-        {
-            full[i] = pbomem[0][i];
-            full[i + file_size_ / 2] = pbomem[1][i];
-        }
-        stbi_write_png(filename, get_relative_width(), get_relative_height(), byte_per_pixel_, full, stride_size_);
-#ifdef DEBUG_MODE
         stbi_write_png(std::string("1" + std::string(filename)).c_str(), get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[0], stride_size_);
         stbi_write_png(std::string("2" + std::string(filename)).c_str(), get_relative_width(), get_relative_height() / 2, byte_per_pixel_, pbomem[1], stride_size_);
-#endif
     }
-        void WindowControl::byte_to_file(GLubyte *pbomem, const char *filename, int width, int height)
+    void WindowControl::byte_to_file(GLubyte *pbomem, const char *filename, int width, int height)
     {
 
         stbi_write_png(filename, width, height, byte_per_pixel_, pbomem, stride_size_);
     }
-            void WindowControl::byte_to_file(GLubyte *pbomem, const char *filename, int posy, int width, int height)
+    void WindowControl::byte_to_file(GLubyte *pbomem, const char *filename, int posy, int width, int height)
     {
 
-        stbi_write_png(filename, width, height, byte_per_pixel_, pbomem+stride_size_*posy, stride_size_);
+        stbi_write_png(filename, width, height, byte_per_pixel_, pbomem + stride_size_ * posy, stride_size_);
     }
 }

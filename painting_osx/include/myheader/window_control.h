@@ -24,10 +24,10 @@ namespace nsg
         std::string title_;
         int padding_;
         unsigned int pbo_[3]; //for screenshot
-        int relative_width_;
-        int relative_height_;
 
     public:
+        static int relative_height_;
+        static int relative_width_;
         static int byte_per_pixel_;
         static int stride_size_;
         static GLubyte **grayscale_picture_;

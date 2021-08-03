@@ -66,7 +66,7 @@ namespace nsg
             getRandFloat(0.0f, 1.0f),
             getRandFloat(0.0f, 1.0f),
             getRandFloat(0.0f, 1.0f),
-            0.5f};
+            getRandFloat(0.0f, 0.99f)};
         if (SquareObject::g_is_grayscale_ == true)
         {
             color[0] = color[1] = color[2] = 0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2];
@@ -115,9 +115,9 @@ namespace nsg
         {
             if (rand() % 2 == 0)
             {
-                set_brushidx(dna[i]);
                 set_rotate(dna[i]);
-                if (rand() % 3 == 0)
+                set_brushidx(dna[i]);
+                if (rand() % 2 == 0)
                 {
                     set_color(dna[i]);
                 }
@@ -125,7 +125,7 @@ namespace nsg
                 {
                     set_scale(dna[i]);
                 }
-                if (rand() % 6 == 0)
+                if (rand() % 5 == 0)
                 {
                     set_translate(dna[i]);
                 }

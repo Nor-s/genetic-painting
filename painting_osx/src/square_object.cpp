@@ -67,11 +67,10 @@ namespace nsg
         }
         
 #ifdef __APPLE__
-        while (tex_width_ > 500 || tex_height_ > 500)
-        {
-            tex_width_ *= 0.8f;
-            tex_height_ *= 0.8f;
-        };
+        while (tex_width_ > 800 || tex_height_ > 800) {
+            tex_width_ /= 2;
+            tex_height_ /= 2;
+        }
 #endif
         while (tex_width_ > 1000 || tex_height_ > 1000)
         {

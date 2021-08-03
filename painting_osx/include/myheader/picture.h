@@ -18,6 +18,7 @@ namespace nsg
         GLenum pixel_format_;
         GLubyte *image_data_;
         int image_size_;
+        int padding_;
 
     public:
         Picture(int width, int height, int byte_per_pixel, GLenum pixel_format);
@@ -27,6 +28,8 @@ namespace nsg
         void init_pbo();
         void prepare_sub_picture();
         void start_sub_picture();
+        void start_sub_picture(int posx, int posy, int width, int height);
+        void read_back_buffer(int posx, int posy, int width, int height);
         void read_back_buffer();
         void unbind_write_pbo();
         void set_width(int width);
