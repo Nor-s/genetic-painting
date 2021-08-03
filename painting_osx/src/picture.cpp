@@ -1,7 +1,23 @@
 #include "myheader/picture.h"
-#define DEBUG_MODE
+//#define DEBUG_MODE
 namespace nsg
 {
+    /*
+        bitmap picture
+        init : black 
+         - - - sub_picture order - - -
+
+            bind_write_pbo_pointer();
+                |
+            (rendering)
+                |
+            read_back_buffer();
+                |
+            unbind_write_pbo();
+                |
+            sub_picture();
+         - - - - - - - - - - - - - - - 
+    */
     Picture::Picture(int width, int height, int byte_per_pixel, GLenum pixel_format)
     {
         set_width(width);
@@ -9,7 +25,7 @@ namespace nsg
 
         pixel_format_ = pixel_format;
         byte_per_pixel_ = byte_per_pixel;
-        image_size_ = (relative_width_ * byte_per_pixel_ +  relative_width_% 4) * relative_height_;
+        image_size_ = (relative_width_ * byte_per_pixel_ + relative_width_ % 4) * relative_height_;
 
         image_data_ = new GLubyte[image_size_];
         memset(image_data_, 0, image_size_);
@@ -22,20 +38,22 @@ namespace nsg
         SquareObject::translate(0.0f, 0.0f, -50.0f);
         SquareObject::set_model_to_uniform();
     }
-    Picture::Picture(const char *filepath, int byte_per_pixel, bool is_gray) : SquareObject(filepath, byte_per_pixel) {
-        byte_per_pixel_ = byte_per_pixel;
-        image_data_ = nullptr;
-        SquareObject::init_shader();
-        if(is_gray) {
-            set_color_to_uniform(-1.0f, -1.0f, -1.0f, 1.0f);
-        }
-    }
-
-    Picture::Picture(const char *filepath, int byte_per_pixel) : SquareObject(filepath, byte_per_pixel)
+    
+    Picture::Picture(const char *filepath, int byte_per_pixel)
     {
+        SquareObject::init_texture(filepath, GL_RGBA, (byte_per_pixel == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE);
+
         byte_per_pixel_ = byte_per_pixel;
         image_data_ = nullptr;
+        SquareObject::set_vertices();
+        init_buffer_objects();
         SquareObject::init_shader();
+        SquareObject::translate(0.0f, 0.0f, -50.0f);
+        SquareObject::set_model_to_uniform();
+        if (g_is_grayscale_)
+        {
+            set_color_to_uniform(-1.0f);
+        }
     }
     Picture::~Picture()
     {
@@ -55,7 +73,7 @@ namespace nsg
         glBufferData(GL_PIXEL_UNPACK_BUFFER, image_size_, 0, GL_STREAM_DRAW);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     }
-    void Picture::bind_write_pbo_pointer()
+    void Picture::prepare_sub_picture()
     {
         // bind PBO
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, write_pbo_id_);
@@ -73,10 +91,12 @@ namespace nsg
     }
     void Picture::unbind_write_pbo()
     {
-            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release pointer to mapping buffer
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release pointer to mapping buffer
     }
-    void Picture::sub_picture()
+    void Picture::start_sub_picture()
     {
+        read_back_buffer();
+        unbind_write_pbo();
         // bind the texture and PBO
         glBindTexture(GL_TEXTURE_2D, texture_id_);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, write_pbo_id_);
@@ -90,14 +110,14 @@ namespace nsg
     {
         relative_width_ = tex_width_ = width;
 #ifdef __APPLE__
-        relative_width_ *= 2;
+ //      relative_width_ *= 2;
 #endif
     }
     void Picture::set_height(int height)
     {
         relative_height_ = tex_height_ = height;
 #ifdef __APPLE__
-       relative_height_ *= 2;
+   //     relative_height_ *= 2;
 #endif
     }
     int Picture::get_relative_width()

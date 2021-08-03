@@ -18,12 +18,12 @@ namespace nsg
     {
     private:
         static bool rendering_semaphore_;
+        static int file_size_;
 
         GLFWwindow *window_;
         std::string title_;
         int padding_;
-        int file_size_;
-        unsigned int pbo_[3];
+        unsigned int pbo_[3]; //for screenshot
         int relative_width_;
         int relative_height_;
 
@@ -37,23 +37,31 @@ namespace nsg
         static std::vector<WindowControl *> g_windows_;
         static void rendering_lock();
         static void rendering_unlock();
+        static int get_file_size();
+        int get_relative_width();
+        int get_relative_height();
+        
 
         WindowControl(int width, int height, const char *title);
         ~WindowControl();
         GLFWwindow *init_window();
         GLFWwindow *get_window();
-        void init_pbo();
         void clear_window_white();
-        GLubyte **get_window_halfpixel();
-        GLubyte *get_window_fullpixel();
-        void window_to_file(const char *filename);
-        void byte_to_file(GLubyte **pboMem, const char *filename);
+
         void set_buffersize_pbo();
         void set_screenshot_size();
         void set_height(int height);
         void set_width(int width);
-        int get_relative_height();
-        int get_relative_width();
+
+        void init_pbo();
+        GLubyte *get_window_pixel(unsigned int pbo_id, int x, int y, int width, int height);
+        GLubyte **get_window_halfpixel(unsigned int pbo_id1, unsigned int pbo_id2);
+        GLubyte **get_window_halfpixel();
+        GLubyte *get_window_fullpixel(unsigned int pbo_id);
+        void screen_shot(const char *filename);
+        void byte_to_file(GLubyte **pboMem, const char *filename);
+        void byte_to_file(GLubyte *pboMem, const char *filename, int width, int height);
+        void byte_to_file(GLubyte *pbomem, const char *filename, int posy, int width, int height);
 
         void resize_window(int width, int height);
         void read_pixels(int x, int y, int width, int height);

@@ -4,8 +4,10 @@
 #include <vector>
 #include "myheader/square_object.h"
 
-namespace nsg {
-    class Brush : public SquareObject {
+namespace nsg
+{
+    class Brush : public SquareObject
+    {
     private:
         const char *tex_[4] = {
             "../resources/1.png",
@@ -13,12 +15,13 @@ namespace nsg {
             "../resources/6.png",
             "../resources/9.png",
         };
+
     public:
         Brush(int idx);
-        
     };
-    struct Palette {
-        static std::vector<Brush*> brushes_;
+    struct Palette
+    {
+        static std::vector<Brush *> brushes_;
         static int brushes_size_;
         static void init_brushes();
         static int get_brushes_size();

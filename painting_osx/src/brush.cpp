@@ -1,7 +1,9 @@
 #include "myheader/brush.h"
 
-namespace nsg {
-    Brush::Brush(int idx) {
+namespace nsg
+{
+    Brush::Brush(int idx)
+    {
         init_texture(tex_[idx], GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
         set_vertices();
         init_buffer_objects();
@@ -49,7 +51,8 @@ namespace nsg
     }
     void Palette::set_color(float color[4])
     {
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             color_[i] = color[i];
         }
     }

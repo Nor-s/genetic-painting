@@ -4,13 +4,8 @@ glm::mat4 Shader::projection_matrix;
 
 namespace nsg
 {
+    bool SquareObject::g_is_grayscale_ = false;
     SquareObject::SquareObject() {}
-    SquareObject::SquareObject(const char *filepath, int byte_per_pixel)
-    {
-        init_texture(filepath, GL_RGBA, (byte_per_pixel == 3)?GL_RGB:GL_RGBA, GL_UNSIGNED_BYTE);
-        set_vertices(tex_width_, tex_height_);
-        init_buffer_objects();
-    }
     SquareObject::~SquareObject()
     {
 #ifdef DEBUG_MOD
@@ -22,7 +17,8 @@ namespace nsg
         glDeleteBuffers(1, &ebo_);
         delete shader_;
     }
-    void SquareObject::init_shader() {
+    void SquareObject::init_shader()
+    {
         init_shader(vs_base_, fs_base_);
     }
     void SquareObject::init_shader(const char *vertex, const char *frag)
@@ -31,18 +27,20 @@ namespace nsg
         init_texture_unit();
         init_model();
         set_model_to_uniform();
+        set_color_to_uniform(1.0f, 1.0f, 1.0f, 1.0f);
         set_color_to_uniform(1.0f);
     }
-    void SquareObject::init_texture(GLvoid* image_data, int width, int height, GLenum pixel_format) {
-            // init texture objects
-            glGenTextures(1, &texture_id_);
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, image_data);
-            glBindTexture(GL_TEXTURE_2D, 0);
+    void SquareObject::init_texture(GLvoid *image_data, int width, int height, GLenum pixel_format)
+    {
+        // init texture objects
+        glGenTextures(1, &texture_id_);
+        glBindTexture(GL_TEXTURE_2D, texture_id_);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, image_data);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
     void SquareObject::init_texture(const char *fileName, GLint inter_format, GLenum origin_format, GLenum origin_type)
     {
@@ -67,12 +65,20 @@ namespace nsg
         {
             std::cout << "Failed to load texture" << std::endl;
         }
+        
 #ifdef __APPLE__
-    tex_width_/=4;tex_height_ /=4;
+        while (tex_width_ > 500 || tex_height_ > 500)
+        {
+            tex_width_ *= 0.8f;
+            tex_height_ *= 0.8f;
+        };
 #endif
-        while(tex_width_ > 500) {
-            tex_width_*=0.8f;tex_height_ *=0.8f;
+        while (tex_width_ > 1000 || tex_height_ > 1000)
+        {
+            tex_width_ *= 0.5f;
+            tex_height_ *= 0.5f;
         }
+        
         stbi_image_free(data);
     }
     void SquareObject::init_buffer_objects()
@@ -123,28 +129,30 @@ namespace nsg
     }
     void SquareObject::set_vertices()
     {
-        vertices_[0] = vertices_[5] = (float)tex_width_ / 2.0f;
-        vertices_[10] = vertices_[15] = -(float)tex_width_ / 2.0f;
-        vertices_[1] = vertices_[16] = (float)tex_height_ / 2.0f;
-        vertices_[6] = vertices_[11] = -(float)tex_height_ / 2.0f;
+        vertices_[0] = vertices_[5] = (float)tex_width_;
+        vertices_[10] = vertices_[15] = 0.0f;
+        vertices_[1] = vertices_[16] = (float)tex_height_;
+        vertices_[6] = vertices_[11] = 0.0f;
     }
     void SquareObject::set_vertices(int width, int height)
     {
-        vertices_[0] = vertices_[5] = (float)width / 2.0f;
-        vertices_[10] = vertices_[15] = -(float)width / 2.0f;
-        vertices_[1] = vertices_[16] = (float)height / 2.0f;
-        vertices_[6] = vertices_[11] = -(float)height / 2.0f;
+        vertices_[0] = vertices_[5] = (float)width;
+        vertices_[10] = vertices_[15] = 0.0f;
+        vertices_[1] = vertices_[16] = (float)height;
+        vertices_[6] = vertices_[11] = 0.0f;
     }
     void SquareObject::set_model_to_uniform()
     {
         shader_->use();
         shader_->setMat4("Model", model_transform_);
     }
-    void SquareObject::set_color_to_uniform(float r, float g, float b, float a) {
+    void SquareObject::set_color_to_uniform(float r, float g, float b, float a)
+    {
         shader_->use();
         shader_->setVec4("Color", r, g, b, a);
     }
-    void SquareObject::set_color_to_uniform(float color) {
+    void SquareObject::set_color_to_uniform(float color)
+    {
         shader_->use();
         shader_->setVec4("Color", color, color, color, color);
     }
