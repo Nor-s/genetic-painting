@@ -1,10 +1,12 @@
 # genetic-painting
 
-<img src = "/note/screenshot/2021-08-02 (1).gif" width="50%" height="50%" title="n=8" alt="n=8"></img>
+<img src = "/note/screenshot/2021-08-4 (10).gif" width="50%" height="50%" title="n=8" alt="n=8"></img>
 
-<img src = "/note/screenshot/2021-08-02.png" width="50%" height="50%" title="n=8" alt="n=8"></img>
+<img src = "/note/screenshot/2021-08-4 (5).gif" width="50%" height="50%" title="n=8" alt="n=8"></img>
 
+<img src = "/note/screenshot/2021-08-04(1).png" width="50%" height="50%" title="n=8" alt="n=8"></img>
 
+<img src = "/note/screenshot/2021-08-04(3).png" width="50%" height="50%" title="n=8" alt="n=8"></img>
 
 # library
 OpenGL
@@ -17,7 +19,7 @@ glm
 
 stbi_image
 
-# link
+# reference link
 
 brush: https://www.onlygfx.com/14-white-grunge-brush-stroke-png-transparent/
 
