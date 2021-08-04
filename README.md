@@ -4,7 +4,7 @@
 
 <img src = "/note/screenshot/2021-08-02 (1).gif" width="50%" height="50%" title="n=8" alt="n=8"></img>
 
-<img src = "/note/screenshot/2021-08-04(4).gif" width="50%" height="50%" title="n=8" alt="n=8"></img>
+<img src = "/note/screenshot/2021-08-4 (11).gif" width="50%" height="50%" title="n=8" alt="n=8"></img
 
 <img src = "/note/screenshot/2021-08-04(1).png" width="50%" height="50%" title="n=8" alt="n=8"></img>
 
