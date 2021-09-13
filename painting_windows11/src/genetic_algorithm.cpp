@@ -54,8 +54,15 @@ namespace nsg
     */
     void GeneticAlgorithm::start_main_loop()
     {
+        auto current_time = std::chrono::high_resolution_clock::now();
+
         while (!glfwWindowShouldClose(WindowControl::g_windows_[0]->get_window()))
         {
+            auto new_time = std::chrono::high_resolution_clock::now();
+            float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
+            std::cout << frame_time << "\n";
+            current_time = new_time;
+
             process_input();
             rendering_0();
             glfwSwapBuffers(WindowControl::g_windows_[0]->get_window());
@@ -93,7 +100,7 @@ namespace nsg
         init_target_pbo_full(WindowControl::get_file_size());
 
 #ifdef DEBUG_MODE
-    std::cout<<WindowControl::g_width_<<" "<<WindowControl::g_height_<<"\n";
+        std::cout << WindowControl::g_width_ << " " << WindowControl::g_height_ << "\n";
 #endif
 
         set_picture_to_data(picture_);
@@ -101,8 +108,9 @@ namespace nsg
         int div_height = WindowControl::g_height_ / population_num_;
         for (int i = 0; i < population_num_; i++)
         {
-            if(i == population_num_ - 1) {
-                div_height += WindowControl::g_height_%population_num_;
+            if (i == population_num_ - 1)
+            {
+                div_height += WindowControl::g_height_ % population_num_;
             }
             population_[i] = new Population(
                 population_size_, dna_len_, max_stage_,
@@ -111,8 +119,8 @@ namespace nsg
                 brush_width_);
             init_population_pbo(i, div_height);
             posy += div_height;
-           //caculate_fitness(population_[i], population_pbo_[i], &best_score_[i]);
-           best_score_[i] = 0.0;
+            //caculate_fitness(population_[i], population_pbo_[i], &best_score_[i]);
+            best_score_[i] = 0.0;
         }
     }
     /*
@@ -158,7 +166,7 @@ namespace nsg
                 start_algorithm(population_[i], population_pbo_[i]);
                 fitness = population_[i]->top()->fitness_ref();
 
-         //       if (best_score_[i] - 0.005 <= fitness)
+                if (best_score_[i] - 0.001 <= fitness)
                 {
                     best_score_[i] = fitness;
                     WindowControl::g_windows_[1]->clear_window_white();
@@ -227,9 +235,9 @@ namespace nsg
         GLubyte *ret = WindowControl::g_windows_[1]->get_window_pixel(pbo_id, x, y, width, height);
 #ifdef DEBUG_MODE
 
-static int count = 0;
-if(!draw_dna)
-        WindowControl::g_windows_[1]->byte_to_file(ret, (std::to_string(count++)+"ret.png").c_str(),width, height);
+        static int count = 0;
+        if (!draw_dna)
+            WindowControl::g_windows_[1]->byte_to_file(ret, (std::to_string(count++) + "ret.png").c_str(), width, height);
 #endif
 
         return ret;
@@ -266,8 +274,6 @@ if(!draw_dna)
 
 #endif
 
-
-
         for (int i = 0; i < size; i++)
         {
             population->fitness_ref(i) = fitnessFunction(
@@ -285,9 +291,9 @@ if(!draw_dna)
         int posx = population->get_posx(), posy = population->get_posy(), width = population->get_width(), height = population->get_height();
         int size = population->get_population_size();
 #ifdef DEBUG_MODE
-static int count= 0;
+        static int count = 0;
         std::cout << "posx : " << posx << " posy: " << posy << " width: " << width << " height: " << height << "\n";
-        WindowControl::g_windows_[0]->byte_to_file(target_picture_full_,(std::to_string(count++) +"target_half.png").c_str(), posy, width, height);
+        WindowControl::g_windows_[0]->byte_to_file(target_picture_full_, (std::to_string(count++) + "target_half.png").c_str(), posy, width, height);
 #endif
         *fitness = fitnessFunction(
             target_picture_full_,
@@ -313,9 +319,12 @@ double fitnessFunction(GLubyte *a, GLubyte *b, int posx, int posy, int width, in
     int line = width * channel + (width * (4 - channel)) % 4;
     int end_x = line + x;
 
+    std::cout << " add :" << adder << " offset : " << x << " " << y << "  extent : " << end_y << " " << end_x << "\n";
+    auto new_time = std::chrono::high_resolution_clock::now();
+
     for (int i = y; i < end_y; i++)
     {
-        for (int j = x; j < end_x; j+= adder)
+        for (int j = x; j < end_x; j += adder)
         {
             int bk = (i - y) * line + (j - x);
             int ak = i * line + j;
@@ -324,6 +333,9 @@ double fitnessFunction(GLubyte *a, GLubyte *b, int posx, int posy, int width, in
             denomB += b[bk] * b[bk];
         }
     }
+    auto finish_time = std::chrono::high_resolution_clock::now();
+    float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(finish_time - new_time).count();
+    std::cout << " calc: " << frame_time << "\n";
     ret = (dot / (sqrt(denomA) * sqrt(denomB)));
     return ret;
 }

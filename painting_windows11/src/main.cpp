@@ -19,11 +19,11 @@ GeneticAlgorithm *g_genetic_manager;
     if macOS and using other display (!retina display)
     => set SquareObject => set_width , set_height , relative_width *= 1.0f
 */
-std::pair<float, float> g_brush_width = {0.04, 0.1};
-int g_population_size = 20;
-int g_dna_len = 10;
+std::pair<float, float> g_brush_width = {0.02, 0.15};
+int g_population_size = 10;
+int g_dna_len = 4;
 int g_max_stage = 1;
-int g_population_num = 10;
+int g_population_num = 1;
 
 int main()
 {
@@ -32,7 +32,7 @@ int main()
         GL_RGBA : picture_bpp = 4
     */
     GeneticAlgorithm::picture_byte_per_pixel_ = 3;
-    SquareObject::g_is_grayscale_ = true;
+    SquareObject::g_is_grayscale_ = false;
 
     srand(static_cast<unsigned>(time(0)));
 

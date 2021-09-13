@@ -128,7 +128,7 @@ namespace nsg
                 {
                     set_scale(dna[i]);
                 }
-                if (rand() % 5 == 0)
+                if (rand() % 6 == 0)
                 {
                     set_translate(dna[i]);
                 }

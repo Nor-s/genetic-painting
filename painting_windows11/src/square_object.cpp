@@ -53,11 +53,11 @@ namespace nsg
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         // load and generate the texture
         int nr_channels;
-        unsigned char *data = stbi_load(fileName, &tex_width_, &tex_height_, &nr_channels, 0);
+        unsigned char *data = stbi_load(fileName, &tex_width_, &tex_height_, &nr_channels, STBI_rgb_alpha);
 
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, inter_format, tex_width_, tex_height_, 0, origin_format, origin_type, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, inter_format, tex_width_, tex_height_, 0, GL_RGBA, origin_type, data);
             glGenerateMipmap(GL_TEXTURE_2D);
         }
         else
